@@ -52,7 +52,14 @@ def print_req_1(control):
     """
         Función que imprime la solución del Requerimiento 1 en consola
     """
-    # TODO: Imprimir el resultado del requerimiento 1
+    fecha_i = input("Indique la fecha inicial: ")
+    fecha_f = input("Indique la fecha final: ")
+    muestra = int(input("Indique la cantidad de viajes que quiere ver: "))
+    tiempo, trayectos, iniciales, finales = logic.req_1(control, fecha_i, fecha_f, muestra)
+    print("Tiempo de ejecución del requerimiento en [ms]: "+str(tiempo) +"\
+        Trayectos dentro del rango de fechas: " + str(trayectos))
+    print(iniciales)
+    print(finales)
     
 
 def print_req_2(control):

@@ -2,6 +2,7 @@ import time
 import csv
 csv.field_size_limit(2147483647)
 from DataStructures.List import array_list as lt
+from DataStructures.Map import map_linear_probing as mp
 import math as math
 
 def new_logic():
@@ -127,24 +128,78 @@ def get_data(catalog, id):
     else:
         return None
 
+def sort_criteria_viajes(element_1, element_2):
+    is_sorted = False
+    if element_1["pickup_datetime"] < element_2["pickup_datetime"]:
+        is_sorted = True
+    return is_sorted
 
-def req_1():
-    return None
+sort_crit = sort_criteria_viajes
+def req_1(catalog, inicio, final, muestra):
+    start = get_time()
+    
+    trayectos = 0
+    iniciales = lt.new_list()
+    finales = lt.new_list()
+    viajes_organizados = lt.merge_sort(catalog["viajes"], sort_crit)
+    tam = lt.size(viajes_organizados)
+    for i in range(0, tam):
+        viaje = lt.get_element(viajes_organizados, i)
+        if inicio <= viaje["pickup_datetime"] and viaje["pickup_datetime"] <= final:
+            trayectos +=1
+        if trayectos <= 2*muestra:
+            for j in range(muestra):
+                viaje = lt.get_element(viajes_organizados, j)
+                lt.add_last(iniciales, viaje)
+            for k in range(trayectos-muestra, trayectos):
+                viaje = lt.get_element(viajes_organizados, k)
+                lt.add_last(finales,tam)
+        else:
+            for j in range(0, trayectos//2):
+                viaje = lt.get_element(viajes_organizados, j)
+                lt.add_last(iniciales, viaje)
+            for k in range(trayectos//2 +1, trayectos):
+                viaje = lt.get_element(viajes_organizados, k)
+                lt.add_last(finales, viaje)
+                
+    end = get_time()
+    tiempo = delta_time(start, end)
+    return tiempo, trayectos, iniciales, finales
 
-def req_2():
-    return None
+def req_2(catalog):
+    start = get_time()
+    
+    end = get_time()
+    tiempo = delta_time(start, end)
+    return tiempo
 
-def req_3():
-    return None
+def req_3(catalog):
+    start = get_time()
+    
+    end = get_time()
+    tiempo = delta_time(start, end)
+    return tiempo
 
-def req_4():
-    return None
+def req_4(catalog):
+    start = get_time()
+    
+    end = get_time()
+    tiempo = delta_time(start, end)
+    return tiempo
 
-def req_5():
-    return None
+def req_5(catalog):
+    start = get_time()
+    
+    end = get_time()
+    tiempo = delta_time(start, end)
+    return tiempo
 
-def req_6():
-    return None
+def req_6(catalog):
+    start = get_time()
+    
+    end = get_time()
+    tiempo = delta_time(start, end)
+    return tiempo
 
 
 # Funciones para medir tiempos de ejecucion
