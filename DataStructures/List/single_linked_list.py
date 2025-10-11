@@ -307,28 +307,23 @@ def merge(lst1, lst2, sort_crit):
     return new
 
 def quick_sort(list, sort_crit):
-    tam = list["size"]
-    if tam == 0 or tam > 1:
-        return list
+    return quick_sort_1(list, 0, size(list)-1, sort_crit)
+
+def quick_sort_1(lst,io,hi,sort_crit):
+    if io >= hi:
+        return lst
     else:
-        pivot = get_element(list, 0)
-        menores = new_list()
-        mayores = new_list()
-        for i in range(1, list["size"]):
-            elem = get_element(list, i)
-            if sort_crit(elem, pivot):
-                add_last(menores, elem)
-            else:
-                add_last(mayores, elem)
-        sorted_less = quick_sort(menores, sort_crit)
-        sorted_greater = quick_sort(mayores, sort_crit)
-            
-    sorted_array = new_list()
-    for i in range(sorted_less["size"]):
-        add_last(sorted_array, get_element(sorted_less, i))
-    
-    add_last(sorted_array, pivot)
-    for i in range(sorted_greater["size"]):
-        add_last(sorted_array, get_element(sorted_greater, i))
-    return sorted_array
-            
+        pivot = partition(lst, io,hi,sort_crit)
+        quick_sort_1(lst,io,pivot-1,sort_crit)
+        quick_sort_1(lst,pivot+1,hi,sort_crit)
+    return lst
+def partition(lst,io,hi,sort_crit):
+    f = io
+    l = io
+    while l<hi:
+        if sort_crit(get_element(lst,l),get_element(lst,hi)):
+            exchange(lst, f,l)
+            f +=1
+        l +=1
+    exchange(lst,f,hi)
+    return f
