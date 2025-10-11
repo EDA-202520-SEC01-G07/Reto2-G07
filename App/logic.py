@@ -139,32 +139,41 @@ def req_1(catalog, inicio, final, muestra):
     start = get_time()
     
     trayectos = 0
-    iniciales = lt.new_list()
-    finales = lt.new_list()
-    viajes_organizados = lt.merge_sort(catalog["viajes"], sort_crit)
     tam = lt.size(viajes_organizados)
+    viajes_filtrados = lt.new_list()
     for i in range(0, tam):
         viaje = lt.get_element(viajes_organizados, i)
         if inicio <= viaje["pickup_datetime"] and viaje["pickup_datetime"] <= final:
-            trayectos +=1
-        if trayectos <= 2*muestra:
-            for j in range(muestra):
-                viaje = lt.get_element(viajes_organizados, j)
-                lt.add_last(iniciales, viaje)
-            for k in range(trayectos-muestra, trayectos):
-                viaje = lt.get_element(viajes_organizados, k)
-                lt.add_last(finales,tam)
-        else:
-            for j in range(0, trayectos//2):
-                viaje = lt.get_element(viajes_organizados, j)
-                lt.add_last(iniciales, viaje)
-            for k in range(trayectos//2 +1, trayectos):
-                viaje = lt.get_element(viajes_organizados, k)
-                lt.add_last(finales, viaje)
-                
+            trayectos += 1
+            lt.add_last(viajes_filtrados, viaje)
+    izq = lt.new_list()
+    der = lt.new_list()
+    viajes_organizados = lt.merge_sort(viajes_filtrados, sort_crit)    
+    
+    for j in range(2*muestra):
+        viaje = lt.get_element(viajes_organizados, j)
+        if j < muestra+1:
+            m = mp.new_map(6,0.5,109345121)
+            mp.put(m, "Fecha y tiempo de recogida", viaje["pickup_datetime"])
+            mp.put(m, "Latitud y longitud de recogida",f'[{viaje["pickup_latitude"]},{viaje["pickup_longitude"]}]')
+            mp.put(m, "Fecha t tiempo de terminación", viaje["dropoff_datetime"])
+            mp.put(m, "Latitud y longitud de terminación",f'[{viaje["dropoff_latitude"]},{viaje["dropoff_longitude"]}]')
+            mp.put(m, "Distancia", viaje["trip_distance"])
+            mp.put(m, "Costo total pagado", viaje["total_amount"])
+            lt.add_last(izq, m)
+        elif j >= muestra+1:
+            m = mp.new_map(6,0.5,109345121)
+            mp.put(m, "Fecha y tiempo de recogida", viaje["pickup_datetime"])
+            mp.put(m, "Latitud y longitud de recogida",f'[{viaje["pickup_latitude"]},{viaje["pickup_longitude"]}]')
+            mp.put(m, "Fecha t tiempo de terminación", viaje["dropoff_datetime"])
+            mp.put(m, "Latitud y longitud de terminación",f'[{viaje["dropoff_latitude"]},{viaje["dropoff_longitude"]}]')
+            mp.put(m, "Distancia", viaje["trip_distance"])
+            mp.put(m, "Costo total pagado", viaje["total_amount"])
+            lt.add_last(der, m)
+
     end = get_time()
     tiempo = delta_time(start, end)
-    return tiempo, trayectos, iniciales, finales
+    return tiempo, trayectos
 
 def req_2(catalog):
     start = get_time()
