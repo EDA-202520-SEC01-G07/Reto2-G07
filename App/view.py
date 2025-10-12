@@ -80,8 +80,19 @@ def print_req_4(control):
     """
         Función que imprime la solución del Requerimiento 4 en consola
     """
-    # TODO: Imprimir el resultado del requerimiento 4
-    
+    #f_terminacion = input("Indique la fecha de terminación: ")
+    #t_ref = input("Indique el tiempo de referencia: ")
+    #criterio = input("Indique si quiere los viajes antes o después al tiempo de referencia (sin tildes): ")
+    #n = input("Indique la muestra del viaje: ")
+    # BORRAR; SOLO PARA PRUEBAS
+    f_terminacion = "2015-01-20"
+    t_ref = "00:05:00"
+    criterio = "Antes"
+    n = 10
+    tiempo, trayectos, viajes_filtrados = logic.req_4(control, f_terminacion, t_ref, criterio, n)
+    print("Tiempo de ejecución en ms: " + str(tiempo))
+    print("Trayectos ["+criterio+"] que cumplieron los requisitos de fecha y hora de terminación: " + str(trayectos))
+    print(viajes_filtrados)
     
 def print_req_5(control):
     """
