@@ -216,13 +216,30 @@ def aux_req_1(viajes):
     end = get_time()
     tiempo = delta_time(start, end)
     return tiempo, l
-    
-def req_2(catalog):
+def sort_crit2(element_1, element_2):
+    is_sorted = False
+    if float(element_1["pickup_latitude"]) > float(element_2["pickup_latitude"]):
+        is_sorted = True
+    elif float(element_1["pickup_latitude"]) == float(element_2["pickup_latitude"]):
+        if float(element_1["pickup_longitude"]) > float(element_2["pickup_longitude"]):
+            is_sorted = True
+    return is_sorted
+
+def req_2(catalog,coord_ini, coord_fin, tamano_muestra):
     start = get_time()
-    
+    tamano= lt.size(catalog["viajes"])
+    viajes_filtrados = lt.new_list()
+    trayectos = 0
+    for i in range(0, tamano):
+        viaje = lt.get_element(catalog["viajes"], i)
+        lat_ini = viaje["pickup_latitude"]
+        if lat_ini>=coord_ini and lat_ini<=coord_fin:
+            trayectos += 1
+            viajes_filtrados = lt.add_last(viajes_filtrados, viaje)
+    viajes_orden = lt.quick_sort(viajes_filtrados, sort_crit2)     
     end = get_time()
     tiempo = delta_time(start, end)
-    return tiempo
+    return tiempo, trayectos, viajes_orden
 
 def req_3(catalog):
     start = get_time()
