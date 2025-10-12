@@ -89,10 +89,11 @@ def print_req_4(control):
     t_ref = "00:05:00"
     criterio = "Antes"
     n = 10
-    tiempo, trayectos, viajes_filtrados = logic.req_4(control, f_terminacion, t_ref, criterio, n)
-    print("Tiempo de ejecución en ms: " + str(tiempo))
+    tiempo, trayectos, v = logic.req_4(control, f_terminacion, t_ref, criterio, n)
+    tiempo1, viajes = logic.aux_presentacion(v)
+    print("Tiempo de ejecución en ms: " + str(tiempo+tiempo1))
     print("Trayectos ["+criterio+"] que cumplieron los requisitos de fecha y hora de terminación: " + str(trayectos))
-    print(viajes_filtrados)
+    print(viajes)
     
 def print_req_5(control):
     """
