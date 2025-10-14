@@ -221,6 +221,11 @@ def default_sort_criteria(element_1, element_2):
     return is_sorted
 sort_criteria = default_sort_criteria
 
+def sort_criteria_viajes(element_1, element_2):
+    is_sorted = False
+    if element_1["pickup_datetime"] < element_2["pickup_datetime"]:
+        is_sorted = True
+    return is_sorted
 
 def insertion_sort(my_list, default_sort_criteria):
     sort_list = new_list()

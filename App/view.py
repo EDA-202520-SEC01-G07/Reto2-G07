@@ -52,11 +52,14 @@ def print_req_1(control): #preguntar cómo se organiza una lista, preguntar form
     """
         Función que imprime la solución del Requerimiento 1 en consola
     """
-    fecha_i = input("Indique la fecha inicial: ")
-    fecha_f = input("Indique la fecha final: ")
+    #fecha_i = input("Indique la fecha inicial: ")
+    #fecha_f = input("Indique la fecha final: ")
     muestra = int(input("Indique la cantidad de viajes que quiere ver: "))
+    
+    fecha_i = "2015-01-15 07:00:00"
+    fecha_f = "2015-01-15 07:30:00"
     tiempo, trayectos, viajes= logic.req_1(control, fecha_i, fecha_f, muestra)
-    tiempo1, lista = logic.aux_req_1(viajes)
+    tiempo1, lista = logic.aux_presentacion(viajes)
     
     print("Tiempo de ejecución del requerimiento en [ms]: "+str(tiempo+tiempo1) +"\
         Trayectos dentro del rango de fechas: " + str(trayectos))
@@ -83,12 +86,11 @@ def print_req_4(control):
     #f_terminacion = input("Indique la fecha de terminación: ")
     #t_ref = input("Indique el tiempo de referencia: ")
     #criterio = input("Indique si quiere los viajes antes o después al tiempo de referencia (sin tildes): ")
-    #n = input("Indique la muestra del viaje: ")
+    n = int(input("Indique la muestra del viaje: "))
     # BORRAR; SOLO PARA PRUEBAS
     f_terminacion = "2015-01-20"
     t_ref = "00:05:00"
     criterio = "Antes"
-    n = 10
     tiempo, trayectos, v = logic.req_4(control, f_terminacion, t_ref, criterio, n)
     tiempo1, viajes = logic.aux_presentacion(v)
     print("Tiempo de ejecución en ms: " + str(tiempo+tiempo1))

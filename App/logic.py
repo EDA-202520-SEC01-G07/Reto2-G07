@@ -129,13 +129,7 @@ def get_data(catalog, id):
     else:
         return None
 
-def sort_criteria_viajes(element_1, element_2):
-    is_sorted = False
-    if element_1["pickup_datetime"] < element_2["pickup_datetime"]:
-        is_sorted = True
-    return is_sorted
-
-sort_crit = sort_criteria_viajes
+sort_crit = lt.sort_criteria_viajes
 def req_1(catalog, inicio, final, muestra): #preguntar cómo se organiza una lista, preguntar formato
     start = get_time()
     
@@ -200,18 +194,21 @@ def aux_presentacion(viajes):
         for i in range(primeros["capacity"]):
             elem = lt.get_element(primeros["table"], i)
             if me.get_key(elem) != None:
-                lt.add_last(p, {elem['key']:elem['value']['elements']})
+                #lt.add_last(p, {elem['key']:elem['value']['elements']})
+                lt.add_last(p, elem["key"])
         for i in range(ultimos["capacity"]):
             elem = lt.get_element(ultimos["table"], i)
             if me.get_key(elem) != None:
-                lt.add_last(u, {elem['key']:elem['value']['elements']})
+                #lt.add_last(u, {elem['key']:elem['value']['elements']})
+                lt.add_last(u, elem["key"])
         l = {"Primeros viajes:": p['elements'], "Últimos viajes:": u['elements']}
     else:
         l = lt.new_list()
         for i in range(viajes["capacity"]):
             elem = lt.get_element(viajes["table"], i)
             if me.get_key(elem) != None:
-                lt.add_last(l, {elem['key']:elem['value']['elements']})
+                #lt.add_last(l, {elem['key']:elem['value']['elements']})
+                lt.add_last(l, elem["key"])
         l = l['elements']
     end = get_time()
     tiempo = delta_time(start, end)
@@ -260,7 +257,8 @@ def req_4(catalog, fecha_terminacion, tiempo_ref, criterio, muestra):
             lt.add_last(lista, f'[{viaje["dropoff_latitude"]},{viaje["dropoff_longitude"]}]')
             lt.add_last(lista, viaje["trip_distance"])
             lt.add_last(lista, viaje["total_amount"])
-            mp.put(primeros, viaje["dropoff_date"], lista)
+            #mp.put(primeros, viaje["dropoff_date"], lista) #SI SE GUARDA USANDO LA FECHA DE TERMINACIÓN SE ESTARTÍA SOBREESCRIBIENDO HYA QUE TODOS LOS VIAJES TIENEN LA MISMA FECHA DE TERMINACIÓN AL SER UNO DE SUS CRITERIOS. PREGUNTAR SI SE GUARDA CON OTRA LLAVE HASH O SI SE GUARDA COMO UNA LISTA.
+            mp.put(primeros, viaje["id"], lista)
         for j in range(lt.size(viajes_organizados)-muestra,lt.size(viajes_organizados)):
             viaje = lt.get_element(viajes_organizados, j)
             lista = lt.new_list()
@@ -270,7 +268,8 @@ def req_4(catalog, fecha_terminacion, tiempo_ref, criterio, muestra):
             lt.add_last(lista, f'[{viaje["dropoff_latitude"]},{viaje["dropoff_longitude"]}]')
             lt.add_last(lista, viaje["trip_distance"])
             lt.add_last(lista, viaje["total_amount"])
-            mp.put(ultimos, viaje["dropoff_date"], lista)
+            #mp.put(ultimos, viaje["dropoff_date"], lista)
+            mp.put(ultimos, viaje["id"], lista)
         viajes = {"Primeros viajes:": primeros, "Últimos viajes:": ultimos}
     elif trayectos < 2*muestra:
         m = mp.new_map(lt.size(viajes_organizados),0.5,109345121)
@@ -283,11 +282,12 @@ def req_4(catalog, fecha_terminacion, tiempo_ref, criterio, muestra):
             lt.add_last(lista, f'[{viaje["dropoff_latitude"]},{viaje["dropoff_longitude"]}]')
             lt.add_last(lista, viaje["trip_distance"])
             lt.add_last(lista, viaje["total_amount"])
-            mp.put(m, viaje["dropoff_date"], lista)
+            #mp.put(m, viaje["dropoff_date"], lista)
+            mp.put(m, viaje["id"], lista)
         viajes = m
     end = get_time()
     tiempo = delta_time(start, end)
-        
+    
     return tiempo, trayectos, viajes
 
 def req_5(catalog):
