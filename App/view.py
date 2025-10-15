@@ -70,6 +70,14 @@ def print_req_2(control):
     """
         Función que imprime la solución del Requerimiento 2 en consola
     """
+    tamano=int(input("Indique el tamaño de la muestra: "))
+    inicio=float(input("Indique la coordenada inicial de latitud: "))
+    fin=float(input("Indique la coordenada final de latitud: "))
+    tiempo, trayectos, viajes = logic.req_2(control, tamano, inicio, fin)
+    print("Tiempo de ejecución en ms: " + str(tiempo))
+    print("Trayectos dentro del rango de latitud: " + str(trayectos))
+    print(viajes)
+    
     # TODO: Imprimir el resultado del requerimiento 2
     
 def print_req_3(control):

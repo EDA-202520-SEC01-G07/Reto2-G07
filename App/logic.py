@@ -360,10 +360,27 @@ def req_5(catalog):
     end = get_time()
     tiempo = delta_time(start, end)
     return tiempo
-
+def sort_crit6(element_1, element_2):
+    is_sorted = False
+    if element_1["pickup_time"] > element_2["pickup_time"]:
+        is_sorted = True
+    return is_sorted
 def req_6(catalog, barrio, hora_ini, hora_fin, tamano_muestra):
     start = get_time()
-    
+    trayectos = 0
+    viajes_filtrados = lt.new_list()
+    tamano= lt.size(catalog["viajes"])
+    for i in range(0, tamano):
+        viaje=lt.get_element(catalog["viajes"], i)
+        lat=viaje["pickup_latitude"]
+        lon=viaje["pickup_longitude"]
+        barrio_rec = barrio_mas_cercano(lat, lon, catalog["barrios"])
+        if barrio_rec == barrio:
+            hora = int(viaje["pickup_time"].split(":"))
+            if hora_ini <= hora and hora <= hora_fin:
+                trayectos += 1
+                lt.add_last(viajes_filtrados, viaje)
+    viajes_orden = lt.quick_sort(viajes_filtrados, sort_crit6)
     end = get_time()
     tiempo = delta_time(start, end)
     return tiempo
