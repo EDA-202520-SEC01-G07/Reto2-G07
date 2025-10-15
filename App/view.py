@@ -57,13 +57,13 @@ def print_req_1(control): #preguntar cómo se organiza una lista, preguntar form
     muestra = int(input("Indique la cantidad de viajes que quiere ver: "))
     
     fecha_i = "2015-01-15 07:00:00"
-    fecha_f = "2015-01-15 07:30:00"
+    fecha_f = "2015-01-15 07:05:00"
     tiempo, trayectos, viajes= logic.req_1(control, fecha_i, fecha_f, muestra)
     tiempo1, lista = logic.aux_presentacion(viajes)
     
     print("Tiempo de ejecución del requerimiento en [ms]: "+str(tiempo+tiempo1) +"\
-        Trayectos dentro del rango de fechas: " + str(trayectos))
-    print(lista)
+        Trayectos dentro del rango de fechas: " + str(trayectos)+"\n")
+    print(tb.tabulate(lista))
     
 
 def print_req_2(control):

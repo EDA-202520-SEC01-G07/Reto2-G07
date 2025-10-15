@@ -5,6 +5,7 @@ from DataStructures.List import array_list as lt
 from DataStructures.Map import map_linear_probing as mp
 from DataStructures.Map import map_entry as me
 import math as math
+import datetime as datetime
 
 def new_logic():
     """
@@ -12,7 +13,9 @@ def new_logic():
     """
     #TODO: Llama a las funciónes de creación de las estructuras de datos
     catalog = {"viajes": None, 
-               "barrios": None}
+               "barrios": None,
+               "fecha": None,
+               "fecha_hora": None}
     catalog["viajes"] = lt.new_list()
     catalog["barrios"] = load_data_neigh()
     return catalog
@@ -45,9 +48,9 @@ def load_data(catalog, filename):
         viaje["id"]=id #El dictreader me da cada fila como un dict, 
                        #pongo una llave id para que sea fácil identificar cada viaje
         viaje["pickup_date"]= viaje["pickup_datetime"][:10] #para obtener fácil la fecha inicio
-        viaje["pickup_time"]=viaje["pickup_datetime"][11:] #para obtener fácil la hora inicio
-        viaje["dropoff_date"]=viaje["dropoff_datetime"][:10] #para obtener fácil la fecha final
-        viaje["dropoff_time"]=viaje["dropoff_datetime"][11:] #para obtener fácil la hora final
+        viaje["pickup_time"]= viaje["pickup_datetime"][11:] #para obtener fácil la hora inicio
+        viaje["dropoff_date"]= viaje["dropoff_datetime"][:10] #para obtener fácil la fecha final
+        viaje["dropoff_time"]= viaje["dropoff_datetime"][11:] #para obtener fácil la hora final
         viaje["passenger_count"] = int(viaje["passenger_count"])
         viaje["trip_distance"] = float(viaje["trip_distance"])
         viaje["pickup_longitude"] = float(viaje["pickup_longitude"])
@@ -63,7 +66,7 @@ def load_data(catalog, filename):
         viaje["improvement_surcharge"] = float(viaje["improvement_surcharge"])
         viaje["total_amount"] = float(viaje["total_amount"])
 
-        lt.add_last(catalog["viajes"], viaje)   
+        lt.add_last(catalog["viajes"], viaje)  
         id += 1
     end = get_time()
     tiempo = delta_time(start, end)
@@ -129,7 +132,16 @@ def get_data(catalog, id):
     else:
         return None
 
-sort_crit = lt.sort_criteria_viajes
+
+def sort_criteria_viajes(element_1, element_2):
+    f1 = datetime.datetime.strptime(element_1["pickup_datetime"], "%Y-%m-%d %H:%M:%S")
+    f2 = datetime.datetime.strptime(element_2["pickup_datetime"], "%Y-%m-%d %H:%M:%S")
+    is_sorted = False
+    if f1 < f2: #Más antigüo al más reciente
+        is_sorted = True
+    return is_sorted
+
+sort_crit = sort_criteria_viajes
 def req_1(catalog, inicio, final, muestra): #preguntar cómo se organiza una lista, preguntar formato
     start = get_time()
     
@@ -137,7 +149,8 @@ def req_1(catalog, inicio, final, muestra): #preguntar cómo se organiza una lis
     viajes_filtrados = lt.new_list()
     for i in range(0, lt.size(catalog["viajes"])):
         viaje = lt.get_element(catalog["viajes"], i)
-        if inicio <= viaje["pickup_datetime"] and viaje["pickup_datetime"] <= final:
+        f = datetime.datetime.strptime(viaje["pickup_datetime"], "%Y-%m-%d %H:%M:%S")
+        if datetime.datetime.strptime(inicio,"%Y-%m-%d %H:%M:%S") <= f and f <= datetime.datetime.strptime(final, "%Y-%m-%d %H:%M:%S"):
             trayectos += 1
             lt.add_last(viajes_filtrados, viaje)
     viajes_organizados = lt.quick_sort(viajes_filtrados, sort_crit)
@@ -177,7 +190,7 @@ def req_1(catalog, inicio, final, muestra): #preguntar cómo se organiza una lis
             lt.add_last(lista, viaje["dropoff_datetime"])
             lt.add_last(lista, f'[{viaje["dropoff_latitude"]},{viaje["dropoff_longitude"]}]')
             lt.add_last(lista, viaje["trip_distance"])
-            lt.add_last(lista, viaje["total_amount"])
+            lt.add_last(lista, viaje["total_amount"])  
             mp.put(m, viaje["id"], lista)
         viajes = m
     end = get_time()
@@ -186,33 +199,30 @@ def req_1(catalog, inicio, final, muestra): #preguntar cómo se organiza una lis
     
 def aux_presentacion(viajes):
     start = get_time()
-    p = lt.new_list()
-    u = lt.new_list()
     if "Primeros viajes:" in viajes:
         primeros = viajes["Primeros viajes:"]
         ultimos = viajes["Últimos viajes:"]
-        for i in range(primeros["capacity"]):
-            elem = lt.get_element(primeros["table"], i)
+        prim = []
+        ult = []
+        for p in range(primeros["capacity"]):
+            elem = lt.get_element(primeros["table"], p)
             if me.get_key(elem) != None:
-                #lt.add_last(p, {elem['key']:elem['value']['elements']})
-                lt.add_last(p, elem["key"])
-        for i in range(ultimos["capacity"]):
-            elem = lt.get_element(ultimos["table"], i)
+                prim.append(elem['value']['elements'])
+        for u in range(ultimos["capacity"]):
+            elem = lt.get_element(ultimos["table"], u)
             if me.get_key(elem) != None:
-                #lt.add_last(u, {elem['key']:elem['value']['elements']})
-                lt.add_last(u, elem["key"])
-        l = {"Primeros viajes:": p['elements'], "Últimos viajes:": u['elements']}
+                ult.append(elem['value']['elements'])
+        l = {"Primeros viajes:": prim, "Últimos viajes:": ult}
     else:
-        l = lt.new_list()
+        l = []
         for i in range(viajes["capacity"]):
             elem = lt.get_element(viajes["table"], i)
             if me.get_key(elem) != None:
-                #lt.add_last(l, {elem['key']:elem['value']['elements']})
-                lt.add_last(l, elem["key"])
-        l = l['elements']
+                l.append(elem['value']['elements'])
     end = get_time()
     tiempo = delta_time(start, end)
     return tiempo, l
+
 def sort_crit2(element_1, element_2):
     is_sorted = False
     if float(element_1["pickup_latitude"]) > float(element_2["pickup_latitude"]):
@@ -344,7 +354,6 @@ def req_4(catalog, fecha_terminacion, tiempo_ref, criterio, muestra):
     tiempo = delta_time(start, end)
     
     return tiempo, trayectos, viajes
-
 def req_5(catalog):
     start = get_time()
     
