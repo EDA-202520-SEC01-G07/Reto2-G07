@@ -14,10 +14,15 @@ def new_logic():
     #TODO: Llama a las funciónes de creación de las estructuras de datos
     catalog = {"viajes": None, 
                "barrios": None,
-               "fecha": None,
-               "fecha_hora": None}
+               "fecha_term": None,
+               "fecha_hora_term": None,
+               "barrio_recog": None}
+    
     catalog["viajes"] = lt.new_list()
     catalog["barrios"] = load_data_neigh()
+    catalog["fecha_term"] = mp.new_map(600, 0.5) #req4 Tabla Hash llave sea la fecha de terminación
+    catalog["fecha_hora_term"] = mp.new_map(600*24, 0.5) #req5 Tabla Hash llave sea fecha y hora terminación
+    catalog["barrio_recog"] = mp.new_map(500, 0.5) #req6 Tabla Hash Barrio
     return catalog
 #Función auxiliar apara cargar datos del nyc-neighborhoods.csv
 def load_data_neigh():       
@@ -67,6 +72,28 @@ def load_data(catalog, filename):
         viaje["total_amount"] = float(viaje["total_amount"])
 
         lt.add_last(catalog["viajes"], viaje)  
+    
+        mapa_req4 = catalog["fecha_term"]
+        mapa_req5 = catalog["fecha_hora_term"]
+        mapa_req6 = catalog["barrio_recog"]
+
+        if mp.contains(mapa_req4, viaje["dropoff_date"]) == False:
+            mp.put(mapa_req4, viaje["dropoff_date"], lt.new_list())
+        l = mp.get(mapa_req4, viaje["dropoff_date"])
+        lt.add_last(l, viaje)
+            
+        formato = viaje["dropoff_datetime"][:13]
+        if mp.contains(mapa_req5, formato) == False:
+            mp.put(mapa_req5, formato, lt.new_list())
+        l = mp.get(mapa_req5, formato)
+        lt.add_last(l, viaje)
+        
+        barrio = barrio_mas_cercano(viaje["pickup_latitude"],viaje["pickup_longitude"],catalog["barrios"])
+        if mp.contains(mapa_req6, barrio) == False:
+            mp.put(mapa_req6, barrio, lt.new_list())
+        l = mp.get(mapa_req6, barrio)
+        lt.add_last(l, viaje)
+        
         id += 1
     end = get_time()
     tiempo = delta_time(start, end)
@@ -113,6 +140,9 @@ def load_data(catalog, filename):
             "Distancia (millas)": viaje["trip_distance"],
             "Costo total": viaje["total_amount"]}
         ultimos.append(info)
+    print(catalog["fecha_term"])
+    print(catalog["fecha_hora_term"])
+    print(mapa_req6 = catalog["barrio_recog"])
     return tiempo, total, menorid, menor, fecha_menor, costo_menor, mayorid, mayor, fecha_mayor, costo_mayor, primeros, ultimos
 
 
