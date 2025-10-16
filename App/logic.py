@@ -194,6 +194,11 @@ def req_3(catalog):
     tiempo = delta_time(start, end)
     return tiempo
 
+def mapas(catalog):
+    catalog["fecha_term"] = mp.new_map(2000, 0.5) #req4 Tabla Hash llave sea la fecha de terminación
+    catalog["fecha_hora_term"] = mp.new_map(2000*24, 0.5) #req5 Tabla Hash llave sea fecha y hora terminación
+    catalog["barrio_recog"] = mp.new_map(1000, 0.5) #req6 Tabla Hash Barrio
+
 def req_4(catalog, fecha_terminacion, tiempo_ref, criterio, muestra):
     start = get_time()
     criterio = criterio.lower()
