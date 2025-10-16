@@ -72,7 +72,22 @@ def print_req_3(control):
     """
         Función que imprime la solución del Requerimiento 3 en consola
     """
-    # TODO: Imprimir el resultado del requerimiento 3
+    d_ini = float(input("Ingrese la distancia inicial (en millas): "))
+    d_fin = float(input("Ingrese la distancia final (en millas): "))
+    muestra = int(input("Ingrese el número de trayectos a mostrar (N): "))
+
+    tiempo, trayectos, filtrado, iniciales, finales= logic.req_3(control, d_ini, d_fin, muestra)
+    if trayectos <= muestra*2:
+        print("Tiempo de ejecución del requerimiento en [ms]: " + str(tiempo))
+        print("Total de trayectos dentro del rango de distancia: " + str(trayectos))
+        print(str(filtrado))
+    else:
+        print("Tiempo de ejecución del requerimiento en [ms]: " + str(tiempo))
+        print("Total de trayectos dentro del rango de distancia: " + str(trayectos))
+        print("\nPrimeros 5 trayectos del rango:\n")
+        print(iniciales)
+        print("\nÚltimos 5 trayectos del rango:\n")
+        print(finales)
     
 
 def print_req_4(control):

@@ -172,17 +172,57 @@ def req_2(catalog):
     end = get_time()
     tiempo = delta_time(start, end)
     return tiempo
-
-def req_3(catalog):
+def sort_crit_distancia(v1, v2):
+    if v1["trip_distance"] > v2["trip_distance"]:
+        return True
+    elif v1["trip_distance"] == v2["trip_distance"]:
+        return v1["total_amount"] > v2["total_amount"]
+    else:
+        return False
+sort_crit_dist= sort_crit_distancia
+def req_3(catalog, d_ini,d_fin,n):
     start = get_time()
-    
+    tam= lt.size(catalog["viajes"])
+    trayectos= 0
+    filtrado=lt.new_list()
+    for i in range(0, tam):
+        viaje= lt.get_element(catalog["viajes"], i)
+        if viaje["trip_distance"] >= d_ini and viaje["trip_distance"] <= d_fin:
+            trayectos += 1
+            lt.add_last(filtrado, viaje)
+    lt.merge_sort(filtrado, sort_crit_dist)
+    iniciales= lt.new_list()
+    finales= lt.new_list()
+    for j in range(0, 5):
+        viaje = lt.get_element(filtrado, j)
+        viaje_filtrado = {
+            "pickup_datetime": viaje["pickup_datetime"],
+            "pickup_coords": [viaje["pickup_latitude"], viaje["pickup_longitude"]],
+            "dropoff_datetime": viaje["dropoff_datetime"],
+            "dropoff_coords": [viaje["dropoff_latitude"], viaje["dropoff_longitude"]],
+            "trip_distance": viaje["trip_distance"],
+            "total_amount": viaje["total_amount"]
+        }
+        lt.add_last(iniciales, viaje_filtrado)
+
+    for k in range(trayectos - 5, trayectos):
+        viaje = lt.get_element(filtrado, k)
+        viaje_filtrado = {
+            "pickup_datetime": viaje["pickup_datetime"],
+            "pickup_coords": [viaje["pickup_latitude"], viaje["pickup_longitude"]],
+            "dropoff_datetime": viaje["dropoff_datetime"],
+            "dropoff_coords": [viaje["dropoff_latitude"], viaje["dropoff_longitude"]],
+            "trip_distance": viaje["trip_distance"],
+            "total_amount": viaje["total_amount"]
+        }
+        lt.add_last(finales, viaje_filtrado)
     end = get_time()
     tiempo = delta_time(start, end)
-    return tiempo
+    return tiempo, trayectos, filtrado, iniciales, finales
 
 def req_4(catalog):
     start = get_time()
-    
+
     end = get_time()
     tiempo = delta_time(start, end)
     return tiempo
