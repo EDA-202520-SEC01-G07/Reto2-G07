@@ -100,12 +100,8 @@ def put(mapa, key, valor):
    return mapa
 
 def contains(my_map, key):
-   encontrado = False
-   for i in range(my_map["capacity"]):
-      current = lt.get_element(my_map["table"], i)
-      if me.get_key(current) == key:
-         encontrado = True
-         return encontrado
+   hash = mf.hash_value(my_map, key)
+   encontrado, pos = find_slot(my_map, key, hash)
    return encontrado
 
 def get(my_map, key):

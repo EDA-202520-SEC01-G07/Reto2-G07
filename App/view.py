@@ -1,6 +1,11 @@
 import sys
 import tabulate as tb
 import App.logic as logic
+from DataStructures.List import array_list as lt
+from DataStructures.Map import map_linear_probing as mp
+from DataStructures.Map import map_entry as me
+import math as math
+import datetime as datetime
 
 default_limit = 1000
 sys.setrecursionlimit(default_limit*10) 
@@ -32,6 +37,50 @@ def load_data(control):
     filename = input('Diga el archivo que quiere evaluar (small, medium, large)\n').strip()
     filename = "data/taxis-"+filename+".csv"
     tiempo, total, menorid, menor, fecha_menor, costo_menor, mayorid, mayor, fecha_mayor, costo_mayor, primeros, ultimos = logic.load_data(control, filename)
+    
+    total = lt.size(control["viajes"])
+    menor = 99999999999999
+    mayor = 0.0
+    for i in range(0, total):
+        viaje = lt.get_element(control["viajes"], i)
+            #calcula el viaje con menor distancia y el mayor
+        if viaje["trip_distance"] < menor and viaje["trip_distance"] > 0.0:
+            menorid = viaje["id"]
+            menor = viaje["trip_distance"]
+            fecha_menor = viaje["pickup_datetime"]
+            costo_menor = viaje["total_amount"]
+            
+        if viaje["trip_distance"] > mayor:
+            mayorid = viaje["id"]
+            mayor = viaje["trip_distance"]
+            fecha_mayor = viaje["pickup_datetime"]
+            costo_mayor = viaje["total_amount"]
+    
+    primeros = []
+    for i in range (0,5):
+        viaje = lt.get_element(control["viajes"], i)
+        duracion = logic.diferencia_tiempo(viaje)
+        info = {"Id_trayecto": viaje["id"],
+            "Fecha/Hora inicio": viaje["pickup_datetime"],
+            "Fecha/Hora destino": viaje["dropoff_datetime"],
+            "Duración (min)": duracion,
+            "Distancia (millas)": viaje["trip_distance"],
+            "Costo total": viaje["total_amount"]}
+        primeros.append(info)
+    
+    ultimos = []
+    for i in range (total-5, total):
+        viaje = lt.get_element(control["viajes"], i)
+        duracion = logic.diferencia_tiempo(viaje)
+        viaje = lt.get_element(control["viajes"], i)
+        info = {"Id_trayecto": viaje["id"],
+            "Fecha/Hora inicio": viaje["pickup_datetime"],
+            "Fecha/Hora destino": viaje["dropoff_datetime"],
+            "Duración (min)": duracion,
+            "Distancia (millas)": viaje["trip_distance"],
+            "Costo total": viaje["total_amount"]}
+        ultimos.append(info)
+    
     print("\nTiempo de carga: "+str(tiempo)+" [ms].\
         \nTotal de trayectos: "+str(total)+" trayectos.\
         \nEl trayecto con menor distancia es el "+str(menorid)+":  \t Distancia: "+str(menor)+" [millas]\t Fecha: "+str(fecha_menor)+"\tCosto: $"+str(costo_menor)+"\n\

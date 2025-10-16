@@ -20,8 +20,8 @@ def new_logic():
     
     catalog["viajes"] = lt.new_list()
     catalog["barrios"] = load_data_neigh()
-    catalog["fecha_term"] = mp.new_map(600, 0.5) #req4 Tabla Hash llave sea la fecha de terminación
-    catalog["fecha_hora_term"] = mp.new_map(600*24, 0.5) #req5 Tabla Hash llave sea fecha y hora terminación
+    catalog["fecha_term"] = mp.new_map(1000, 0.5) #req4 Tabla Hash llave sea la fecha de terminación
+    catalog["fecha_hora_term"] = mp.new_map(365*24, 0.5) #req5 Tabla Hash llave sea fecha y hora terminación
     catalog["barrio_recog"] = mp.new_map(500, 0.5) #req6 Tabla Hash Barrio
     return catalog
 #Función auxiliar apara cargar datos del nyc-neighborhoods.csv
@@ -78,74 +78,29 @@ def load_data(catalog, filename):
         mapa_req6 = catalog["barrio_recog"]
 
         if mp.contains(mapa_req4, viaje["dropoff_date"]) == False:
-            mp.put(mapa_req4, viaje["dropoff_date"], lt.new_list())
+            mapa_req4 = mp.put(mapa_req4, viaje["dropoff_date"], lt.new_list())
         l = mp.get(mapa_req4, viaje["dropoff_date"])
         lt.add_last(l, viaje)
             
         formato = viaje["dropoff_datetime"][:13]
         if mp.contains(mapa_req5, formato) == False:
-            mp.put(mapa_req5, formato, lt.new_list())
+            mapa_req5 = mp.put(mapa_req5, formato, lt.new_list())
         l = mp.get(mapa_req5, formato)
         lt.add_last(l, viaje)
         
         barrio = barrio_mas_cercano(viaje["pickup_latitude"],viaje["pickup_longitude"],catalog["barrios"])
         if mp.contains(mapa_req6, barrio) == False:
-            mp.put(mapa_req6, barrio, lt.new_list())
+            mapa_req6 = mp.put(mapa_req6, barrio, lt.new_list())
         l = mp.get(mapa_req6, barrio)
         lt.add_last(l, viaje)
         
+        catalog["fecha_term"] = mapa_req4
+        catalog["fecha_hora_term"] = mapa_req5
+        catalog["barrio_recog"] = mapa_req6
         id += 1
     end = get_time()
     tiempo = delta_time(start, end)
-    
-    total = lt.size(catalog["viajes"])
-    menor = 99999999999999
-    mayor = 0.0
-    for i in range(0, total):
-        viaje = lt.get_element(catalog["viajes"], i)
-            #calcula el viaje con menor distancia y el mayor
-        if viaje["trip_distance"] < menor and viaje["trip_distance"] > 0.0:
-            menorid = viaje["id"]
-            menor = viaje["trip_distance"]
-            fecha_menor = viaje["pickup_datetime"]
-            costo_menor = viaje["total_amount"]
-            
-        if viaje["trip_distance"] > mayor:
-            mayorid = viaje["id"]
-            mayor = viaje["trip_distance"]
-            fecha_mayor = viaje["pickup_datetime"]
-            costo_mayor = viaje["total_amount"]
-    
-    primeros = []
-    for i in range (0,5):
-        viaje = lt.get_element(catalog["viajes"], i)
-        duracion = diferencia_tiempo(viaje)
-        info = {"Id_trayecto": viaje["id"],
-            "Fecha/Hora inicio": viaje["pickup_datetime"],
-            "Fecha/Hora destino": viaje["dropoff_datetime"],
-            "Duración (min)": duracion,
-            "Distancia (millas)": viaje["trip_distance"],
-            "Costo total": viaje["total_amount"]}
-        primeros.append(info)
-    
-    ultimos = []
-    for i in range (total-5, total):
-        viaje = lt.get_element(catalog["viajes"], i)
-        duracion = diferencia_tiempo(viaje)
-        viaje = lt.get_element(catalog["viajes"], i)
-        info = {"Id_trayecto": viaje["id"],
-            "Fecha/Hora inicio": viaje["pickup_datetime"],
-            "Fecha/Hora destino": viaje["dropoff_datetime"],
-            "Duración (min)": duracion,
-            "Distancia (millas)": viaje["trip_distance"],
-            "Costo total": viaje["total_amount"]}
-        ultimos.append(info)
-    print(catalog["fecha_term"])
-    print(catalog["fecha_hora_term"])
-    print(mapa_req6 = catalog["barrio_recog"])
-    return tiempo, total, menorid, menor, fecha_menor, costo_menor, mayorid, mayor, fecha_mayor, costo_mayor, primeros, ultimos
-
-
+    return tiempo
 # Funciones de consulta sobre el catálogo
 
 def get_data(catalog, id):
