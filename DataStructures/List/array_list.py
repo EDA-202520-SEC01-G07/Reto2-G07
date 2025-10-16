@@ -103,7 +103,7 @@ def default_sort_criteria(element_1, element_2):
     if element_1 < element_2:
         is_sorted = True
     return is_sorted
-sort_crit = default_sort_criteria
+
 
 def insertion_sort(my_list, sort_crit):
     sort_list = new_list()
@@ -181,25 +181,24 @@ def merge(list_1, list_2, sort_crit):
             r += 1
     return merged_list
 
-def quick_sort(array_list, sort_crit):
-    if array_list["size"] > 1:
-        pivot = get_element(array_list, 0)
-        less = new_list()
-        greater = new_list()
-        for i in range(1, array_list["size"]):
-            elem = get_element(array_list, i)
-            if sort_crit(elem, pivot):
-                add_last(less, elem)
-            else:
-                add_last(greater, elem)
-        sorted_less = quick_sort(less, sort_crit)
-        sorted_greater = quick_sort(greater, sort_crit)
-        sorted_array = new_list()
-        for i in range(sorted_less["size"]):
-            add_last(sorted_array, get_element(sorted_less, i))
-        add_last(sorted_array, pivot)
-        for i in range(sorted_greater["size"]):
-            add_last(sorted_array, get_element(sorted_greater, i))
-        return sorted_array
+def quick_sort(list, sort_crit):
+    return quick_sort_1(list, 0, size(list)-1, sort_crit)
+
+def quick_sort_1(lst,io,hi,sort_crit):
+    if io >= hi:
+        return lst
     else:
-        return array_list
+        pivot = partition(lst, io,hi,sort_crit)
+        quick_sort_1(lst,io,pivot-1,sort_crit)
+        quick_sort_1(lst,pivot+1,hi,sort_crit)
+    return lst
+def partition(lst,io,hi,sort_crit):
+    f = io
+    l = io
+    while l<hi:
+        if sort_crit(get_element(lst,l),get_element(lst,hi)):
+            exchange(lst, f,l)
+            f +=1
+        l +=1
+    exchange(lst,f,hi)
+    return f

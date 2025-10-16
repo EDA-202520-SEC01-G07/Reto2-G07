@@ -3,7 +3,9 @@ import csv
 csv.field_size_limit(2147483647)
 from DataStructures.List import array_list as lt
 from DataStructures.Map import map_linear_probing as mp
+from DataStructures.Map import map_entry as me
 import math as math
+import datetime as datetime
 
 def new_logic():
     """
@@ -11,9 +13,16 @@ def new_logic():
     """
     #TODO: Llama a las funciónes de creación de las estructuras de datos
     catalog = {"viajes": None, 
-               "barrios": None}
+               "barrios": None,
+               "fecha_term": None,
+               "fecha_hora_term": None,
+               "barrio_recog": None}
+    
     catalog["viajes"] = lt.new_list()
     catalog["barrios"] = load_data_neigh()
+    catalog["fecha_term"] = mp.new_map(600, 0.5) #req4 Tabla Hash llave sea la fecha de terminación
+    catalog["fecha_hora_term"] = mp.new_map(600*24, 0.5) #req5 Tabla Hash llave sea fecha y hora terminación
+    catalog["barrio_recog"] = mp.new_map(500, 0.5) #req6 Tabla Hash Barrio
     return catalog
 #Función auxiliar apara cargar datos del nyc-neighborhoods.csv
 def load_data_neigh():       
@@ -44,9 +53,9 @@ def load_data(catalog, filename):
         viaje["id"]=id #El dictreader me da cada fila como un dict, 
                        #pongo una llave id para que sea fácil identificar cada viaje
         viaje["pickup_date"]= viaje["pickup_datetime"][:10] #para obtener fácil la fecha inicio
-        viaje["pickup_time"]=viaje["pickup_datetime"][11:] #para obtener fácil la hora inicio
-        viaje["dropoff_date"]=viaje["dropoff_datetime"][:10] #para obtener fácil la fecha final
-        viaje["dropoff_time"]=viaje["dropoff_datetime"][11:] #para obtener fácil la hora final
+        viaje["pickup_time"]= viaje["pickup_datetime"][11:] #para obtener fácil la hora inicio
+        viaje["dropoff_date"]= viaje["dropoff_datetime"][:10] #para obtener fácil la fecha final
+        viaje["dropoff_time"]= viaje["dropoff_datetime"][11:] #para obtener fácil la hora final
         viaje["passenger_count"] = int(viaje["passenger_count"])
         viaje["trip_distance"] = float(viaje["trip_distance"])
         viaje["pickup_longitude"] = float(viaje["pickup_longitude"])
@@ -62,55 +71,12 @@ def load_data(catalog, filename):
         viaje["improvement_surcharge"] = float(viaje["improvement_surcharge"])
         viaje["total_amount"] = float(viaje["total_amount"])
 
-        lt.add_last(catalog["viajes"], viaje)   
+        lt.add_last(catalog["viajes"], viaje)  
+    
         id += 1
     end = get_time()
     tiempo = delta_time(start, end)
-    
-    total = lt.size(catalog["viajes"])
-    menor = 99999999999999
-    mayor = 0.0
-    for i in range(0, total):
-        viaje = lt.get_element(catalog["viajes"], i)
-            #calcula el viaje con menor distancia y el mayor
-        if viaje["trip_distance"] < menor and viaje["trip_distance"] > 0.0:
-            menorid = viaje["id"]
-            menor = viaje["trip_distance"]
-            fecha_menor = viaje["pickup_datetime"]
-            costo_menor = viaje["total_amount"]
-            
-        if viaje["trip_distance"] > mayor:
-            mayorid = viaje["id"]
-            mayor = viaje["trip_distance"]
-            fecha_mayor = viaje["pickup_datetime"]
-            costo_mayor = viaje["total_amount"]
-    
-    primeros = []
-    for i in range (0,5):
-        viaje = lt.get_element(catalog["viajes"], i)
-        duracion = diferencia_tiempo(viaje)
-        info = {"Id_trayecto": viaje["id"],
-            "Fecha/Hora inicio": viaje["pickup_datetime"],
-            "Fecha/Hora destino": viaje["dropoff_datetime"],
-            "Duración (min)": duracion,
-            "Distancia (millas)": viaje["trip_distance"],
-            "Costo total": viaje["total_amount"]}
-        primeros.append(info)
-    
-    ultimos = []
-    for i in range (total-5, total):
-        viaje = lt.get_element(catalog["viajes"], i)
-        duracion = diferencia_tiempo(viaje)
-        viaje = lt.get_element(catalog["viajes"], i)
-        info = {"Id_trayecto": viaje["id"],
-            "Fecha/Hora inicio": viaje["pickup_datetime"],
-            "Fecha/Hora destino": viaje["dropoff_datetime"],
-            "Duración (min)": duracion,
-            "Distancia (millas)": viaje["trip_distance"],
-            "Costo total": viaje["total_amount"]}
-        ultimos.append(info)
-    return tiempo, total, menorid, menor, fecha_menor, costo_menor, mayorid, mayor, fecha_mayor, costo_mayor, primeros, ultimos
-
+    return tiempo
 
 # Funciones de consulta sobre el catálogo
 
@@ -128,46 +94,34 @@ def get_data(catalog, id):
     else:
         return None
 
+
 def sort_criteria_viajes(element_1, element_2):
+    f1 = datetime.datetime.strptime(element_1["pickup_datetime"], "%Y-%m-%d %H:%M:%S")
+    f2 = datetime.datetime.strptime(element_2["pickup_datetime"], "%Y-%m-%d %H:%M:%S")
     is_sorted = False
-    if element_1["pickup_datetime"] < element_2["pickup_datetime"]:
+    if f1 < f2: #Más antigüo al más reciente
         is_sorted = True
     return is_sorted
 
 sort_crit = sort_criteria_viajes
-def req_1(catalog, inicio, final, muestra):
+def req_1(catalog, inicio, final, muestra): #preguntar cómo se organiza una lista, preguntar formato
     start = get_time()
-    
     trayectos = 0
-    iniciales = lt.new_list()
-    finales = lt.new_list()
-    viajes_organizados = lt.merge_sort(catalog["viajes"], sort_crit)
-    tam = lt.size(viajes_organizados)
-    for i in range(0, tam):
-        viaje = lt.get_element(viajes_organizados, i)
-        if inicio <= viaje["pickup_datetime"] and viaje["pickup_datetime"] <= final:
-            trayectos +=1
-        if trayectos <= 2*muestra:
-            for j in range(muestra):
-                viaje = lt.get_element(viajes_organizados, j)
-                lt.add_last(iniciales, viaje)
-            for k in range(trayectos-muestra, trayectos):
-                viaje = lt.get_element(viajes_organizados, k)
-                lt.add_last(finales,tam)
-        else:
-            for j in range(0, trayectos//2):
-                viaje = lt.get_element(viajes_organizados, j)
-                lt.add_last(iniciales, viaje)
-            for k in range(trayectos//2 +1, trayectos):
-                viaje = lt.get_element(viajes_organizados, k)
-                lt.add_last(finales, viaje)
-                
+    viajes_filtrados = lt.new_list()
+    for i in range(0, lt.size(catalog["viajes"])):
+        viaje = lt.get_element(catalog["viajes"], i)
+        f = datetime.datetime.strptime(viaje["pickup_datetime"], "%Y-%m-%d %H:%M:%S")
+        if datetime.datetime.strptime(inicio,"%Y-%m-%d %H:%M:%S") <= f and f <= datetime.datetime.strptime(final, "%Y-%m-%d %H:%M:%S"):
+            viaje["pickup_longitude"] = round(viaje["pickup_longitude"],2)
+            viaje["pickup_latitude"] = round(viaje["pickup_latitude"],2)
+            viaje["dropoff_longitude"] = round(viaje["dropoff_longitude"],2)
+            viaje["dropoff_latitude"] = round(viaje["dropoff_latitude"],2)
+            trayectos += 1
+            lt.add_last(viajes_filtrados, viaje)
+    viajes_organizados = lt.quick_sort(viajes_filtrados, sort_crit)
     end = get_time()
     tiempo = delta_time(start, end)
-    return tiempo, trayectos, iniciales, finales
-
-def req_2(catalog):
-    start = get_time()
+    return tiempo, trayectos, viajes_organizados
     
     end = get_time()
     tiempo = delta_time(start, end)
@@ -220,12 +174,16 @@ def req_3(catalog, d_ini,d_fin,n):
     tiempo = delta_time(start, end)
     return tiempo, trayectos, filtrado, iniciales, finales
 
-def req_4(catalog):
-    start = get_time()
+def mapas(catalog):
+    catalog["fecha_term"] = mp.new_map(2000, 0.5) #req4 Tabla Hash llave sea la fecha de terminación
+    catalog["fecha_hora_term"] = mp.new_map(2000*24, 0.5) #req5 Tabla Hash llave sea fecha y hora terminación
+    catalog["barrio_recog"] = mp.new_map(1000, 0.5) #req6 Tabla Hash Barrio
 
+def req_4(catalog, fecha_terminacion, tiempo_ref, criterio, muestra):
+    start = get_time()
     end = get_time()
-    tiempo = delta_time(start, end)
-    return tiempo
+    tiempo = delta_time(start, end)    
+    return tiempo, trayectos, viajes_organizados
 
 def req_5(catalog):
     start = get_time()
@@ -233,10 +191,27 @@ def req_5(catalog):
     end = get_time()
     tiempo = delta_time(start, end)
     return tiempo
-
-def req_6(catalog):
+def sort_crit6(element_1, element_2):
+    is_sorted = False
+    if element_1["pickup_time"] > element_2["pickup_time"]:
+        is_sorted = True
+    return is_sorted
+def req_6(catalog, barrio, hora_ini, hora_fin, tamano_muestra):
     start = get_time()
-    
+    trayectos = 0
+    viajes_filtrados = lt.new_list()
+    tamano= lt.size(catalog["viajes"])
+    for i in range(0, tamano):
+        viaje=lt.get_element(catalog["viajes"], i)
+        lat=viaje["pickup_latitude"]
+        lon=viaje["pickup_longitude"]
+        barrio_rec = barrio_mas_cercano(lat, lon, catalog["barrios"])
+        if barrio_rec == barrio:
+            hora = int(viaje["pickup_time"].split(":"))
+            if hora_ini <= hora and hora <= hora_fin:
+                trayectos += 1
+                lt.add_last(viajes_filtrados, viaje)
+    viajes_orden = lt.quick_sort(viajes_filtrados, sort_crit6)
     end = get_time()
     tiempo = delta_time(start, end)
     return tiempo
