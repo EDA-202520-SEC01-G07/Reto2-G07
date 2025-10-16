@@ -112,51 +112,16 @@ def req_1(catalog, inicio, final, muestra): #preguntar cómo se organiza una lis
         viaje = lt.get_element(catalog["viajes"], i)
         f = datetime.datetime.strptime(viaje["pickup_datetime"], "%Y-%m-%d %H:%M:%S")
         if datetime.datetime.strptime(inicio,"%Y-%m-%d %H:%M:%S") <= f and f <= datetime.datetime.strptime(final, "%Y-%m-%d %H:%M:%S"):
+            viaje["pickup_longitude"] = round(viaje["pickup_longitude"],2)
+            viaje["pickup_latitude"] = round(viaje["pickup_latitude"],2)
+            viaje["dropoff_longitude"] = round(viaje["dropoff_longitude"],2)
+            viaje["dropoff_latitude"] = round(viaje["dropoff_latitude"],2)
             trayectos += 1
             lt.add_last(viajes_filtrados, viaje)
     viajes_organizados = lt.quick_sort(viajes_filtrados, sort_crit)
-    
-    if trayectos >=  2*muestra:
-        m1 = mp.new_map(muestra,0.5,109345121)
-        for j in range(muestra):
-            viaje = lt.get_element(viajes_organizados, j)
-            lista = lt.new_list()
-            lt.add_last(lista, viaje["pickup_datetime"])
-            lt.add_last(lista, f'[{viaje["pickup_latitude"]},{viaje["pickup_longitude"]}]')
-            lt.add_last(lista, viaje["dropoff_datetime"])
-            lt.add_last(lista, f'[{viaje["dropoff_latitude"]},{viaje["dropoff_longitude"]}]')
-            lt.add_last(lista, viaje["trip_distance"])
-            lt.add_last(lista, viaje["total_amount"])
-            mp.put(m1, viaje["id"], lista)
-        m2 = mp.new_map(muestra,0.5,109345121)
-        for j in range(lt.size(viajes_organizados)-muestra,lt.size(viajes_organizados)):
-            viaje = lt.get_element(viajes_organizados, j)
-            lista = lt.new_list()
-            lt.add_last(lista, viaje["pickup_datetime"])
-            lt.add_last(lista, f'[{viaje["pickup_latitude"]},{viaje["pickup_longitude"]}]')
-            lt.add_last(lista, viaje["dropoff_datetime"])
-            lt.add_last(lista, f'[{viaje["dropoff_latitude"]},{viaje["dropoff_longitude"]}]')
-            lt.add_last(lista, viaje["trip_distance"])
-            lt.add_last(lista, viaje["total_amount"])
-            mp.put(m2, viaje["id"], lista)
-        viajes = {"Primeros viajes:": m1, "Últimos viajes:": m2}
-    elif trayectos < 2*muestra:
-        viajes = lt.new_list()
-        m = mp.new_map(lt.size(viajes_organizados),0.5,109345121)
-        for k in range(lt.size(viajes_organizados)):
-            viaje = lt.get_element(viajes_organizados, k)
-            lista = lt.new_list()
-            lt.add_last(lista, viaje["pickup_datetime"])
-            lt.add_last(lista, f'[{viaje["pickup_latitude"]},{viaje["pickup_longitude"]}]')
-            lt.add_last(lista, viaje["dropoff_datetime"])
-            lt.add_last(lista, f'[{viaje["dropoff_latitude"]},{viaje["dropoff_longitude"]}]')
-            lt.add_last(lista, viaje["trip_distance"])
-            lt.add_last(lista, viaje["total_amount"])  
-            mp.put(m, viaje["id"], lista)
-        viajes = m
     end = get_time()
     tiempo = delta_time(start, end)
-    return tiempo, trayectos, viajes
+    return tiempo, trayectos, viajes_organizados
     
 def aux_presentacion(viajes):
     start = get_time()

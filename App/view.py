@@ -98,18 +98,54 @@ def print_req_1(control): #preguntar cómo se organiza una lista, preguntar form
     """
         Función que imprime la solución del Requerimiento 1 en consola
     """
-    #fecha_i = input("Indique la fecha inicial: ")
-    #fecha_f = input("Indique la fecha final: ")
+    fecha_i = input("Indique la fecha inicial: ")
+    fecha_f = input("Indique la fecha final: ")
     muestra = int(input("Indique la cantidad de viajes que quiere ver: "))
+    tiempo, trayectos, viajes_organizados= logic.req_1(control, fecha_i, fecha_f, muestra)
     
-    fecha_i = "2015-01-15 07:00:00"
-    fecha_f = "2015-01-15 07:05:00"
-    tiempo, trayectos, viajes= logic.req_1(control, fecha_i, fecha_f, muestra)
-    tiempo1, lista = logic.aux_presentacion(viajes)
+    print("\nTiempo de ejecución del requerimiento en [ms]: "+str(round(tiempo,5)) +"\nTrayectos dentro del rango de fechas: " + str(trayectos)+"\n")
     
-    print("Tiempo de ejecución del requerimiento en [ms]: "+str(tiempo+tiempo1) +"\
-        Trayectos dentro del rango de fechas: " + str(trayectos)+"\n")
-    print(tb.tabulate(lista))
+    if trayectos >=  2*muestra:
+        m1 = []
+        for j in range(muestra):
+            viaje = lt.get_element(viajes_organizados, j)
+            lista = {}
+            lista["F/T Inicio"]=viaje["pickup_datetime"]
+            lista["Lat y long Inicio"]=f'[{viaje["pickup_latitude"]},{viaje["pickup_longitude"]}]'
+            lista["F/T Fin"]=viaje["dropoff_datetime"]
+            lista["Lat y long fin"]=f'[{viaje["dropoff_latitude"]},{viaje["dropoff_longitude"]}]'
+            lista["Distancia (millas)"]=viaje["trip_distance"]
+            lista["Costo total"]=viaje["total_amount"]
+            m1.append(lista)
+        print("Primeros viajes:")
+        print(tb.tabulate(m1, headers="keys", tablefmt="simple_grid"))
+        m2 = []
+        for j in range(lt.size(viajes_organizados)-muestra,lt.size(viajes_organizados)):
+            viaje = lt.get_element(viajes_organizados, j)
+            lista = {}
+            lista["F/T Inicio"]=viaje["pickup_datetime"]
+            lista["Lat y long Inicio"]=f'[{viaje["pickup_latitude"]},{viaje["pickup_longitude"]}]'
+            lista["F/T Fin"]=viaje["dropoff_datetime"]
+            lista["Lat y long fin"]=f'[{viaje["dropoff_latitude"]},{viaje["dropoff_longitude"]}]'
+            lista["Distancia (millas)"]=viaje["trip_distance"]
+            lista["Costo total"]=viaje["total_amount"]
+            m2.append(lista)
+        print("\n Últimos viajes:")
+        print(tb.tabulate(m2, headers="keys", tablefmt="simple_grid"))
+    elif trayectos < 2*muestra:
+        m = []
+        for k in range(lt.size(viajes_organizados)):
+            viaje = lt.get_element(viajes_organizados, k)
+            lista = {}
+            lista["F/T Inicio"]=viaje["pickup_datetime"]
+            lista["Lat y long Inicio"]=f'[{viaje["pickup_latitude"]},{viaje["pickup_longitude"]}]'
+            lista["F/T Fin"]=viaje["dropoff_datetime"]
+            lista["Lat y long fin"]=f'[{viaje["dropoff_latitude"]},{viaje["dropoff_longitude"]}]'
+            lista["Distancia (millas)"]=viaje["trip_distance"]
+            lista["Costo total"]=viaje["total_amount"]
+            m.append(lista)
+        print("\nTodos los viajes:")
+        print(tb.tabulate(m, headers="keys", tablefmt="simple_grid"))
     
 
 def print_req_2(control):
@@ -119,7 +155,7 @@ def print_req_2(control):
     tamano=int(input("Indique el tamaño de la muestra: "))
     inicio=float(input("Indique la coordenada inicial de latitud: "))
     fin=float(input("Indique la coordenada final de latitud: "))
-    tiempo, trayectos, viajes = logic.req_2(control, tamano, inicio, fin)
+    tiempo, trayectos, viajes = logic.req_2(control, inicio, fin,tamano)
     print("Tiempo de ejecución en ms: " + str(tiempo))
     print("Trayectos dentro del rango de latitud: " + str(trayectos))
     print(viajes)
