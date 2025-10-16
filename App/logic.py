@@ -123,32 +123,7 @@ def req_1(catalog, inicio, final, muestra): #preguntar cómo se organiza una lis
     tiempo = delta_time(start, end)
     return tiempo, trayectos, viajes_organizados
     
-def aux_presentacion(viajes):
-    start = get_time()
-    if "Primeros viajes:" in viajes:
-        primeros = viajes["Primeros viajes:"]
-        ultimos = viajes["Últimos viajes:"]
-        prim = []
-        ult = []
-        for p in range(primeros["capacity"]):
-            elem = lt.get_element(primeros["table"], p)
-            if me.get_key(elem) != None:
-                prim.append(elem['value']['elements'])
-        for u in range(ultimos["capacity"]):
-            elem = lt.get_element(ultimos["table"], u)
-            if me.get_key(elem) != None:
-                ult.append(elem['value']['elements'])
-        l = {"Primeros viajes:": prim, "Últimos viajes:": ult}
-    else:
-        l = []
-        for i in range(viajes["capacity"]):
-            elem = lt.get_element(viajes["table"], i)
-            if me.get_key(elem) != None:
-                l.append(elem['value']['elements'])
-    end = get_time()
-    tiempo = delta_time(start, end)
-    return tiempo, l
-
+    
 def sort_crit2(element_1, element_2):
     is_sorted = False
     if float(element_1["pickup_latitude"]) > float(element_2["pickup_latitude"]):

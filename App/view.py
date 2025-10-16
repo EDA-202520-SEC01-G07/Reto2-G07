@@ -94,7 +94,7 @@ def print_data(control, id):
     dato = logic.get_data(control, identificacion)
     print(dato)
 
-def print_req_1(control): #preguntar cómo se organiza una lista, preguntar formato
+def print_req_1(control):
     """
         Función que imprime la solución del Requerimiento 1 en consola
     """
@@ -102,7 +102,6 @@ def print_req_1(control): #preguntar cómo se organiza una lista, preguntar form
     fecha_f = input("Indique la fecha final: ")
     muestra = int(input("Indique la cantidad de viajes que quiere ver: "))
     tiempo, trayectos, viajes_organizados= logic.req_1(control, fecha_i, fecha_f, muestra)
-    
     print("\nTiempo de ejecución del requerimiento en [ms]: "+str(round(tiempo,5)) +"\nTrayectos dentro del rango de fechas: " + str(trayectos)+"\n")
     
     if trayectos >=  2*muestra:
