@@ -147,19 +147,107 @@ def print_req_1(control):
         print(tb.tabulate(m, headers="keys", tablefmt="simple_grid"))
     
 
+
+
 def print_req_2(control):
     """
-        Función que imprime la solución del Requerimiento 2 en consola
+    Imprime la solución del Requerimiento 2 en consola, respetando el orden.
+    Soporta ambos formatos que retorna logic.req_2:
+      A) {"Primeros viajes:": lt.list, "Últimos viajes:": lt.list}
+      B) mp.map con todos los viajes (cuando total < 2 * tamano_muestra)
     """
-    tamano=int(input("Indique el tamaño de la muestra: "))
-    inicio=float(input("Indique la coordenada inicial de latitud: "))
-    fin=float(input("Indique la coordenada final de latitud: "))
-    tiempo, trayectos, viajes = logic.req_2(control, inicio, fin,tamano)
-    print("Tiempo de ejecución en ms: " + str(tiempo))
-    print("Trayectos dentro del rango de latitud: " + str(trayectos))
-    print(viajes)
-    
-    # TODO: Imprimir el resultado del requerimiento 2
+    tamano = int(input("Indique el tamaño de la muestra: "))
+    coord_ini = float(input("Indique la coordenada inicial de latitud: "))
+    coord_fin = float(input("Indique la coordenada final de latitud: "))
+
+    tiempo, total, viajes = logic.req_2(control, coord_ini, coord_fin, tamano)
+
+    print("\n=== Requerimiento 2: Trayectos en rango de latitud ===")
+    print(f"Tiempo de ejecución en ms: {tiempo}")
+    print(f"Trayectos dentro del rango de latitud: {total}")
+
+    # --- helpers locales SOLO dentro de esta función (no afecta otras) ---
+    def pick(d, *keys, default="—"):
+        for k in keys:
+            if k in d:
+                return d[k]
+        return default
+
+    def _print_info(info: dict):
+        # Si por algún motivo vino como {"id":..., "datos": {...}}, destápalo
+        if isinstance(info, dict) and "datos" in info and isinstance(info["datos"], dict):
+            base = info["datos"]
+            base.setdefault("Id_trayecto", info.get("id", info.get("Id_trayecto")))
+            info = base
+
+        id_tray = pick(info, "Id_trayecto", "id", "ID")
+
+        ini_dt = pick(info,
+            "Fecha y hora de recogida", "Fecha y tiempo recogida", "Fecha/Hora inicio",
+            "pickup_datetime", "tpep_pickup_datetime"
+        )
+        ini_xy = pick(info,
+            "Latitud y longitud de recogida", "Latitud y longitud recogida",
+            "pickup_xy", "pickup_coords"
+        )
+
+        fin_dt = pick(info,
+            "Fecha y hora de terminación", "Fecha y tiempo de terminación", "Fecha/Hora destino",
+            "dropoff_datetime", "tpep_dropoff_datetime"
+        )
+        fin_xy = pick(info,
+            "Latitud y longitud de terminación", "dropoff_xy", "dropoff_coords"
+        )
+
+        dist  = pick(info, "Distancia (millas)", "trip_distance", default=0)
+        costo = pick(info, "Costo total", "total_amount", default=0)
+
+        print(f"  • ID: {id_tray}")
+        print(f"    Fecha y hora de recogida     : {ini_dt}")
+        if ini_xy != "—":
+            print(f"    Lat/Lon de recogida          : {ini_xy}")
+        print(f"    Fecha y hora de terminación  : {fin_dt}")
+        if fin_xy != "—":
+            print(f"    Lat/Lon de terminación       : {fin_xy}")
+        print(f"    Distancia                    : {dist} mi")
+        print(f"    Costo                        : ${costo}\n")
+
+    def _print_list(titulo: str, lst):
+        print(f"\n-- {titulo} --")
+        for i in range(0, lt.size(lst)):  # 0-based
+            info = lt.get_element(lst, i)
+            _print_info(info)
+
+    # --- impresión según formato devuelto por logic ---
+    if isinstance(viajes, dict) and "Primeros viajes:" in viajes:
+        _print_list("Primeros viajes", viajes["Primeros viajes:"])
+        _print_list("Últimos viajes", viajes["Últimos viajes:"])
+
+    elif isinstance(viajes, dict) and "table" in viajes and "capacity" in viajes:
+        print("\n-- Todos los trayectos (menos de 2N) --")
+        items = []
+        cap = viajes["capacity"]
+        for i in range(0, cap):  # 0-based
+            entry = lt.get_element(viajes["table"], i)
+            if me.get_key(entry) is not None:
+                items.append(entry["value"])  # dict 'info'
+
+        # Orden preferente por _orden si existe; si no, por fecha de recogida
+        if items and isinstance(items[0], dict) and "_orden" in items[0]:
+            items.sort(key=lambda x: x["_orden"])
+        else:
+            items.sort(key=lambda x: pick(
+                x,
+                "Fecha y hora de recogida", "Fecha y tiempo recogida", "Fecha/Hora inicio",
+                "pickup_datetime", "tpep_pickup_datetime",
+                default=""
+            ))
+        for info in items:
+            _print_info(info)
+
+    else:
+        print("\n(Formato de salida no reconocido por el view)")
+
     
 def print_req_3(control):
     """

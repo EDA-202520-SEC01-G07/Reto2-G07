@@ -167,7 +167,7 @@ def req_2(catalog,coord_ini, coord_fin, tamano_muestra):
                 "Latitud y longitud de terminación": f'[{viaje["dropoff_latitude"]},{viaje["dropoff_longitude"]}]',
                 "Distancia (millas)": viaje["trip_distance"],
                 "Costo total": viaje["total_amount"]}
-            primeros=lt.add_last(primeros,info)
+            lt.add_last(primeros,info)
         ultimos=lt.new_list()
         for j in range(lt.size(viajes_orden)-tamano_muestra,lt.size(viajes_orden)):
             viaje=lt.get_element(viajes_orden,j)
@@ -178,7 +178,7 @@ def req_2(catalog,coord_ini, coord_fin, tamano_muestra):
                 "Latitud y longitud de terminación": f'[{viaje["dropoff_latitude"]},{viaje["dropoff_longitude"]}]',
                 "Distancia (millas)": viaje["trip_distance"],
                 "Costo total": viaje["total_amount"]}
-            ultimos=lt.add_last(ultimos,info)
+            lt.add_last(ultimos,info)
         viajes_orden={"Primeros viajes:": primeros,"Últimos viajes:": ultimos}
     else:
         m=mp.new_map(lt.size(viajes_orden),0.5,109345121)
