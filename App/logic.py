@@ -73,27 +73,6 @@ def load_data(catalog, filename):
 
         lt.add_last(catalog["viajes"], viaje)  
     
-        mapa_req4 = catalog["fecha_term"]
-        mapa_req5 = catalog["fecha_hora_term"]
-        mapa_req6 = catalog["barrio_recog"]
-
-        if mp.contains(mapa_req4, viaje["dropoff_date"]) == False:
-            mp.put(mapa_req4, viaje["dropoff_date"], lt.new_list())
-        l = mp.get(mapa_req4, viaje["dropoff_date"])
-        lt.add_last(l, viaje)
-            
-        formato = viaje["dropoff_datetime"][:13]
-        if mp.contains(mapa_req5, formato) == False:
-            mp.put(mapa_req5, formato, lt.new_list())
-        l = mp.get(mapa_req5, formato)
-        lt.add_last(l, viaje)
-        
-        barrio = barrio_mas_cercano(viaje["pickup_latitude"],viaje["pickup_longitude"],catalog["barrios"])
-        if mp.contains(mapa_req6, barrio) == False:
-            mp.put(mapa_req6, barrio, lt.new_list())
-        l = mp.get(mapa_req6, barrio)
-        lt.add_last(l, viaje)
-        
         id += 1
     end = get_time()
     tiempo = delta_time(start, end)
@@ -140,9 +119,6 @@ def load_data(catalog, filename):
             "Distancia (millas)": viaje["trip_distance"],
             "Costo total": viaje["total_amount"]}
         ultimos.append(info)
-    print(catalog["fecha_term"])
-    print(catalog["fecha_hora_term"])
-    print(mapa_req6 = catalog["barrio_recog"])
     return tiempo, total, menorid, menor, fecha_menor, costo_menor, mayorid, mayor, fecha_mayor, costo_mayor, primeros, ultimos
 
 
