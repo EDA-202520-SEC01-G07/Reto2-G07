@@ -339,10 +339,49 @@ def print_req_5(control):
 
 
 def print_req_6(control):
-    """
-        Función que imprime la solución del Requerimiento 6 en consola
-    """
-    # TODO: Imprimir el resultado del requerimiento 6
+    barrio = input("Barrio: ")
+    hora_ini = input("Hora inicial (HH): ")
+    hora_fin = input("Hora final (HH): ")
+    N = int(input("Tamaño de la muestra: "))
+
+    t, total, viajes = logic.req_6(control, barrio, hora_ini, hora_fin, N)
+
+    print("\n=== Requerimiento 6 ===")
+    print(f"Tiempo (ms): {t}")
+    print(f"Trayectos filtrados: {total}")
+
+    def p(info):  # imprime un item dict del logic
+        print(f"  • ID: {info['Id_trayecto']}")
+        print(f"    Recogida: {info.get('Fecha y tiempo recogida')}")
+        print(f"    [lat,lon] recogida: {info.get('Latitud y longitud recogida')}")
+        fin = info.get('Fecha y tiempo de terminación', info.get('Fecha y hora de terminación'))
+        print(f"    Terminación: {fin}")
+        print(f"    [lat,lon] terminación: {info.get('Latitud y longitud de terminación')}")
+        print(f"    Distancia: {info['Distancia (millas)']} mi")
+        print(f"    Costo: ${info['Costo total']}\n")
+
+    if isinstance(viajes, dict) and "Primeros viajes:" in viajes:
+        for titulo in ("Primeros viajes:", "Últimos viajes:"):
+            print(f"\n-- {titulo[:-1]} --")
+            lst = viajes[titulo]
+            for i in range(0, lt.size(lst)):
+                p(lt.get_element(lst, i))
+    else:
+        print("\n-- Todos (<2N) --")
+        cap = viajes["capacity"]
+        for i in range(0, cap):
+            e = lt.get_element(viajes["table"], i)
+            if me.get_key(e) is None: 
+                continue
+            vals = e["value"]  # es una lt.list con 6 campos en orden
+            print(f"  • ID: {me.get_key(e)}")
+            print(f"    Recogida: {lt.get_element(vals, 0)}")
+            print(f"    [lat,lon] recogida: {lt.get_element(vals, 1)}")
+            print(f"    Terminación: {lt.get_element(vals, 2)}")
+            print(f"    [lat,lon] terminación: {lt.get_element(vals, 3)}")
+            print(f"    Distancia: {lt.get_element(vals, 4)} mi")
+            print(f"    Costo: ${lt.get_element(vals, 5)}\n")
+
     
 
 # Se crea la lógica asociado a la vista

@@ -267,18 +267,55 @@ def req_6(catalog, barrio, hora_ini, hora_fin, tamano_muestra):
     tamano= lt.size(catalog["viajes"])
     for i in range(0, tamano):
         viaje=lt.get_element(catalog["viajes"], i)
-        lat=viaje["pickup_latitude"]
-        lon=viaje["pickup_longitude"]
+        lat=float(viaje["pickup_latitude"])
+        lon=float(viaje["pickup_longitude"])
         barrio_rec = barrio_mas_cercano(lat, lon, catalog["barrios"])
         if barrio_rec == barrio:
-            hora = int(viaje["pickup_time"].split(":"))
-            if hora_ini <= hora and hora <= hora_fin:
+            hora =int(viaje["pickup_datetime"].split(" ")[1].split(":")[0])
+            if int(hora_ini) <= hora and hora <= int(hora_fin):
                 trayectos += 1
                 lt.add_last(viajes_filtrados, viaje)
     viajes_orden = lt.quick_sort(viajes_filtrados, sort_crit6)
     end = get_time()
     tiempo = delta_time(start, end)
-    return tiempo
+    if trayectos >= 2*tamano_muestra:
+        primeros=lt.new_list()
+        for j in range(0,tamano_muestra):
+            viaje=lt.get_element(viajes_orden,j)
+            info={"Id_trayecto": viaje["id"],
+                "Fecha y tiempo recogida": viaje["pickup_datetime"],
+                "Latitud y longitud recogida": f'[{viaje["pickup_latitude"]},{viaje["pickup_longitude"]}]',
+                "Fecha y tiempo de terminación": viaje["dropoff_datetime"],
+                "Latitud y longitud de terminación": f'[{viaje["dropoff_latitude"]},{viaje["dropoff_longitude"]}]',
+                "Distancia (millas)": viaje["trip_distance"],
+                "Costo total": viaje["total_amount"]}
+            lt.add_last(primeros,info)
+        ultimos=lt.new_list()
+        for j in range(lt.size(viajes_orden)-tamano_muestra,lt.size(viajes_orden)):
+            viaje=lt.get_element(viajes_orden,j)
+            info={"Id_trayecto": viaje["id"],
+                "Fecha y tiempo recogida": viaje["pickup_datetime"],
+                "Latitud y longitud recogida": f'[{viaje["pickup_latitude"]},{viaje["pickup_longitude"]}]',
+                "Fecha y hora de terminación": viaje["dropoff_datetime"],
+                "Latitud y longitud de terminación": f'[{viaje["dropoff_latitude"]},{viaje["dropoff_longitude"]}]',
+                "Distancia (millas)": viaje["trip_distance"],
+                "Costo total": viaje["total_amount"]}
+            lt.add_last(ultimos,info)
+        viajes_orden={"Primeros viajes:": primeros,"Últimos viajes:": ultimos}
+    else:
+        m=mp.new_map(lt.size(viajes_orden),0.5,109345121)
+        for k in range(lt.size(viajes_orden)):
+            viaje=lt.get_element(viajes_orden,k)
+            lista=lt.new_list()
+            lt.add_last(lista, viaje["pickup_datetime"])
+            lt.add_last(lista, f'[{viaje["pickup_latitude"]},{viaje["pickup_longitude"]}]')
+            lt.add_last(lista, viaje["dropoff_datetime"])
+            lt.add_last(lista, f'[{viaje["dropoff_latitude"]},{viaje["dropoff_longitude"]}]')
+            lt.add_last(lista, viaje["trip_distance"])
+            lt.add_last(lista, viaje["total_amount"])
+            mp.put(m, viaje["id"], lista)
+        viajes_orden=m
+    return tiempo, trayectos, viajes_orden
 
 
 # Funciones para medir tiempos de ejecucion
