@@ -76,51 +76,7 @@ def load_data(catalog, filename):
         id += 1
     end = get_time()
     tiempo = delta_time(start, end)
-    
-    total = lt.size(catalog["viajes"])
-    menor = 99999999999999
-    mayor = 0.0
-    for i in range(0, total):
-        viaje = lt.get_element(catalog["viajes"], i)
-            #calcula el viaje con menor distancia y el mayor
-        if viaje["trip_distance"] < menor and viaje["trip_distance"] > 0.0:
-            menorid = viaje["id"]
-            menor = viaje["trip_distance"]
-            fecha_menor = viaje["pickup_datetime"]
-            costo_menor = viaje["total_amount"]
-            
-        if viaje["trip_distance"] > mayor:
-            mayorid = viaje["id"]
-            mayor = viaje["trip_distance"]
-            fecha_mayor = viaje["pickup_datetime"]
-            costo_mayor = viaje["total_amount"]
-    
-    primeros = []
-    for i in range (0,5):
-        viaje = lt.get_element(catalog["viajes"], i)
-        duracion = diferencia_tiempo(viaje)
-        info = {"Id_trayecto": viaje["id"],
-            "Fecha/Hora inicio": viaje["pickup_datetime"],
-            "Fecha/Hora destino": viaje["dropoff_datetime"],
-            "Duración (min)": duracion,
-            "Distancia (millas)": viaje["trip_distance"],
-            "Costo total": viaje["total_amount"]}
-        primeros.append(info)
-    
-    ultimos = []
-    for i in range (total-5, total):
-        viaje = lt.get_element(catalog["viajes"], i)
-        duracion = diferencia_tiempo(viaje)
-        viaje = lt.get_element(catalog["viajes"], i)
-        info = {"Id_trayecto": viaje["id"],
-            "Fecha/Hora inicio": viaje["pickup_datetime"],
-            "Fecha/Hora destino": viaje["dropoff_datetime"],
-            "Duración (min)": duracion,
-            "Distancia (millas)": viaje["trip_distance"],
-            "Costo total": viaje["total_amount"]}
-        ultimos.append(info)
-    return tiempo, total, menorid, menor, fecha_menor, costo_menor, mayorid, mayor, fecha_mayor, costo_mayor, primeros, ultimos
-
+    return tiempo
 
 # Funciones de consulta sobre el catálogo
 
@@ -150,7 +106,6 @@ def sort_criteria_viajes(element_1, element_2):
 sort_crit = sort_criteria_viajes
 def req_1(catalog, inicio, final, muestra): #preguntar cómo se organiza una lista, preguntar formato
     start = get_time()
-    
     trayectos = 0
     viajes_filtrados = lt.new_list()
     for i in range(0, lt.size(catalog["viajes"])):
