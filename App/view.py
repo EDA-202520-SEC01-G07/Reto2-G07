@@ -382,8 +382,8 @@ def print_req_5(control):
     #fecha_hora = input("Indique la fecha y hora de terminación (AAAA-MM-DD HH): ")
     #muestra = int(input("Indique la cantidad de trayectos a mostrar: "))
 
-    fecha_hora = "2015-01-15 08"
-    muestra = 10
+    fecha_hora = input("Indique la fecha y hora de terminación (AAAA-MM-DD HH): ")
+    muestra = int(input("Indique la cantidad de trayectos a mostrar: "))
     tiempo, trayectos, viajes_organizados = logic.req_5(control, fecha_hora, muestra)
 
     print("\nTiempo de ejecución en ms: " + str(round(tiempo, 5)))
