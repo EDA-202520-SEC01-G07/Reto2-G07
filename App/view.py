@@ -150,104 +150,60 @@ def print_req_1(control):
 
 
 def print_req_2(control):
-    """
-    Imprime la solución del Requerimiento 2 en consola, respetando el orden.
-    Soporta ambos formatos que retorna logic.req_2:
-      A) {"Primeros viajes:": lt.list, "Últimos viajes:": lt.list}
-      B) mp.map con todos los viajes (cuando total < 2 * tamano_muestra)
-    """
     tamano = int(input("Indique el tamaño de la muestra: "))
     coord_ini = float(input("Indique la coordenada inicial de latitud: "))
     coord_fin = float(input("Indique la coordenada final de latitud: "))
-
     tiempo, total, viajes = logic.req_2(control, coord_ini, coord_fin, tamano)
 
     print("\n=== Requerimiento 2: Trayectos en rango de latitud ===")
     print(f"Tiempo de ejecución en ms: {tiempo}")
     print(f"Trayectos dentro del rango de latitud: {total}")
 
-    # --- helpers locales SOLO dentro de esta función (no afecta otras) ---
-    def pick(d, *keys, default="—"):
-        for k in keys:
-            if k in d:
-                return d[k]
-        return default
-
-    def _print_info(info: dict):
-        # Si por algún motivo vino como {"id":..., "datos": {...}}, destápalo
-        if isinstance(info, dict) and "datos" in info and isinstance(info["datos"], dict):
-            base = info["datos"]
-            base.setdefault("Id_trayecto", info.get("id", info.get("Id_trayecto")))
-            info = base
-
-        id_tray = pick(info, "Id_trayecto", "id", "ID")
-
-        ini_dt = pick(info,
-            "Fecha y hora de recogida", "Fecha y tiempo recogida", "Fecha/Hora inicio",
-            "pickup_datetime", "tpep_pickup_datetime"
-        )
-        ini_xy = pick(info,
-            "Latitud y longitud de recogida", "Latitud y longitud recogida",
-            "pickup_xy", "pickup_coords"
-        )
-
-        fin_dt = pick(info,
-            "Fecha y hora de terminación", "Fecha y tiempo de terminación", "Fecha/Hora destino",
-            "dropoff_datetime", "tpep_dropoff_datetime"
-        )
-        fin_xy = pick(info,
-            "Latitud y longitud de terminación", "dropoff_xy", "dropoff_coords"
-        )
-
-        dist  = pick(info, "Distancia (millas)", "trip_distance", default=0)
-        costo = pick(info, "Costo total", "total_amount", default=0)
-
-        print(f"  • ID: {id_tray}")
-        print(f"    Fecha y hora de recogida     : {ini_dt}")
-        if ini_xy != "—":
-            print(f"    Lat/Lon de recogida          : {ini_xy}")
-        print(f"    Fecha y hora de terminación  : {fin_dt}")
-        if fin_xy != "—":
-            print(f"    Lat/Lon de terminación       : {fin_xy}")
-        print(f"    Distancia                    : {dist} mi")
-        print(f"    Costo                        : ${costo}\n")
-
-    def _print_list(titulo: str, lst):
-        print(f"\n-- {titulo} --")
-        for i in range(0, lt.size(lst)):  # 0-based
-            info = lt.get_element(lst, i)
-            _print_info(info)
-
-    # --- impresión según formato devuelto por logic ---
-    if isinstance(viajes, dict) and "Primeros viajes:" in viajes:
-        _print_list("Primeros viajes", viajes["Primeros viajes:"])
-        _print_list("Últimos viajes", viajes["Últimos viajes:"])
-
-    elif isinstance(viajes, dict) and "table" in viajes and "capacity" in viajes:
-        print("\n-- Todos los trayectos (menos de 2N) --")
-        items = []
+    if "Primeros viajes:" in viajes:
+        for titulo in ("Primeros viajes:", "Últimos viajes:"):
+            print(f"\n-- {titulo[:-1]} --")
+            lst = viajes[titulo]
+            sz = lt.size(lst)
+            i = 0
+            while i < sz:
+                info = lt.get_element(lst, i)
+                print(f"  • ID: {info.get('Id_trayecto', info.get('id'))}")
+                print(f"    Recogida: {info.get('Fecha y hora de recogida') or info.get('Fecha y tiempo recogida') or info.get('Fecha/Hora inicio') or info.get('pickup_datetime')}")
+                print(f"    [lat,lon] recogida: {info.get('Latitud y longitud de recogida') or info.get('Latitud y longitud recogida')}")
+                print(f"    Terminación: {info.get('Fecha y hora de terminación') or info.get('Fecha y tiempo de terminación') or info.get('Fecha/Hora destino') or info.get('dropoff_datetime')}")
+                print(f"    [lat,lon] terminación: {info.get('Latitud y longitud de terminación')}")
+                print(f"    Distancia: {info.get('Distancia (millas)', info.get('trip_distance'))} mi")
+                print(f"    Costo: ${info.get('Costo total', info.get('total_amount'))}\n")
+                i += 1
+    elif ("table" in viajes) and ("capacity" in viajes):
         cap = viajes["capacity"]
-        for i in range(0, cap):  # 0-based
-            entry = lt.get_element(viajes["table"], i)
-            if me.get_key(entry) is not None:
-                items.append(entry["value"])  # dict 'info'
+        items = []
+        i = 0
+        while i < cap:
+            e = lt.get_element(viajes["table"], i)
+            k = me.get_key(e)
+            if k is not None:
+                items.append(e["value"])  
+            i += 1
 
-        # Orden preferente por _orden si existe; si no, por fecha de recogida
-        if items and isinstance(items[0], dict) and "_orden" in items[0]:
+        if len(items) > 0 and ("_orden" in items[0]):
             items.sort(key=lambda x: x["_orden"])
         else:
-            items.sort(key=lambda x: pick(
-                x,
-                "Fecha y hora de recogida", "Fecha y tiempo recogida", "Fecha/Hora inicio",
-                "pickup_datetime", "tpep_pickup_datetime",
-                default=""
-            ))
-        for info in items:
-            _print_info(info)
+            items.sort(key=lambda x: x.get("Fecha y hora de recogida") or x.get("pickup_datetime") or "")
 
-    else:
-        print("\n(Formato de salida no reconocido por el view)")
-
+        j = 0
+        n = len(items)
+        while j < n:
+            info = items[j]
+            print(f"  • ID: {info.get('Id_trayecto', info.get('id'))}")
+            print(f"    Recogida: {info.get('Fecha y hora de recogida') or info.get('Fecha y tiempo recogida') or info.get('pickup_datetime')}")
+            print(f"    [lat,lon] recogida: {info.get('Latitud y longitud de recogida')}")
+            print(f"    Terminación: {info.get('Fecha y hora de terminación') or info.get('Fecha y tiempo de terminación') or info.get('dropoff_datetime')}")
+            print(f"    [lat,lon] terminación: {info.get('Latitud y longitud de terminación')}")
+            print(f"    Distancia: {info.get('Distancia (millas)', info.get('trip_distance'))} mi")
+            print(f"    Costo: ${info.get('Costo total', info.get('total_amount'))}\n")
+            j += 1
+    
     
 
 def print_req_3(control):
@@ -450,41 +406,46 @@ def print_req_6(control):
 
     t, total, viajes = logic.req_6(control, barrio, hora_ini, hora_fin, N)
 
-    print("\n=== Requerimiento 6 ===")
+    print("\n=== Requerimiento 6: Trayectos por barrio y rango de horas ===")
     print(f"Tiempo (ms): {t}")
     print(f"Trayectos filtrados: {total}")
 
-    def p(info):  # imprime un item dict del logic
-        print(f"  • ID: {info['Id_trayecto']}")
-        print(f"    Recogida: {info.get('Fecha y tiempo recogida')}")
-        print(f"    [lat,lon] recogida: {info.get('Latitud y longitud recogida')}")
-        fin = info.get('Fecha y tiempo de terminación', info.get('Fecha y hora de terminación'))
-        print(f"    Terminación: {fin}")
-        print(f"    [lat,lon] terminación: {info.get('Latitud y longitud de terminación')}")
-        print(f"    Distancia: {info['Distancia (millas)']} mi")
-        print(f"    Costo: ${info['Costo total']}\n")
-
-    if isinstance(viajes, dict) and "Primeros viajes:" in viajes:
+    if "Primeros viajes:" in viajes:
         for titulo in ("Primeros viajes:", "Últimos viajes:"):
             print(f"\n-- {titulo[:-1]} --")
             lst = viajes[titulo]
-            for i in range(0, lt.size(lst)):
-                p(lt.get_element(lst, i))
-    else:
-        print("\n-- Todos (<2N) --")
+            sz = lt.size(lst)
+            i = 0
+            while i < sz:
+                info = lt.get_element(lst, i)
+                fin_txt = info.get('Fecha y tiempo de terminación')
+                if fin_txt is None:
+                    fin_txt = info.get('Fecha y hora de terminación')
+                print(f"  • ID: {info['Id_trayecto']}")
+                print(f"    Recogida: {info['Fecha y tiempo recogida']}")
+                print(f"    [lat,lon] recogida: {info['Latitud y longitud recogida']}")
+                print(f"    Terminación: {fin_txt}")
+                print(f"    [lat,lon] terminación: {info['Latitud y longitud de terminación']}")
+                print(f"    Distancia: {info['Distancia (millas)']} mi")
+                print(f"    Costo: ${info['Costo total']}\n")
+                i += 1
+    elif ("table" in viajes) and ("capacity" in viajes):
+        print("\n-- Todos los trayectos (<2N) --")
         cap = viajes["capacity"]
-        for i in range(0, cap):
+        i = 0
+        while i < cap:
             e = lt.get_element(viajes["table"], i)
-            if me.get_key(e) is None: 
-                continue
-            vals = e["value"]  # es una lt.list con 6 campos en orden
-            print(f"  • ID: {me.get_key(e)}")
-            print(f"    Recogida: {lt.get_element(vals, 0)}")
-            print(f"    [lat,lon] recogida: {lt.get_element(vals, 1)}")
-            print(f"    Terminación: {lt.get_element(vals, 2)}")
-            print(f"    [lat,lon] terminación: {lt.get_element(vals, 3)}")
-            print(f"    Distancia: {lt.get_element(vals, 4)} mi")
-            print(f"    Costo: ${lt.get_element(vals, 5)}\n")
+            k = me.get_key(e)
+            if k is not None:
+                vals = e["value"]  # lt.list con 6 campos en orden
+                print(f"  • ID: {k}")
+                print(f"    Recogida: {lt.get_element(vals, 0)}")
+                print(f"    [lat,lon] recogida: {lt.get_element(vals, 1)}")
+                print(f"    Terminación: {lt.get_element(vals, 2)}")
+                print(f"    [lat,lon] terminación: {lt.get_element(vals, 3)}")
+                print(f"    Distancia: {lt.get_element(vals, 4)} mi")
+                print(f"    Costo: ${lt.get_element(vals, 5)}\n")
+            i += 1
 
     
 
