@@ -373,11 +373,70 @@ def print_req_4(control):
         print("\nTodos los viajes:")
         print(tb.tabulate(m, headers="keys", tablefmt="simple_grid"))
     
+
 def print_req_5(control):
     """
         Función que imprime la solución del Requerimiento 5 en consola
     """
-    # TODO: Imprimir el resultado del requerimiento 5
+    fecha_hora = input("Indique la fecha y hora de terminación (AAAA-MM-DD HH): ")
+    muestra = int(input("Indique la cantidad de trayectos a mostrar: "))
+
+    tiempo, trayectos, viajes_organizados = logic.req_5(control, fecha_hora, muestra)
+
+    print("\nTiempo de ejecución en ms: " + str(round(tiempo, 5)))
+    print("Trayectos que cumplen con la fecha y hora de terminación '" + fecha_hora + "': " + str(trayectos))
+
+    if trayectos == 0:
+        print("\nNo se encontraron trayectos para esa fecha y hora.")
+        return
+
+    if trayectos >= 2 * muestra:
+        primeros = []
+        ultimos = []
+        # primeros N
+        for i in range(muestra):
+            viaje = lt.get_element(viajes_organizados["Primeros"], i)
+            lista = {}
+            lista["F/T Inicio"] = viaje["pickup_datetime"]
+            lista["Lat y long Inicio"] = f'[{viaje["pickup_latitude"]},{viaje["pickup_longitude"]}]'
+            lista["F/T Fin"] = viaje["dropoff_datetime"]
+            lista["Lat y long Fin"] = f'[{viaje["dropoff_latitude"]},{viaje["dropoff_longitude"]}]'
+            lista["Distancia (millas)"] = viaje["trip_distance"]
+            lista["Costo total"] = viaje["total_amount"]
+            primeros.append(lista)
+
+        # últimos N
+        for j in range(lt.size(viajes_organizados["Ultimos"])):
+            viaje = lt.get_element(viajes_organizados["Ultimos"], j)
+            lista = {}
+            lista["F/T Inicio"] = viaje["pickup_datetime"]
+            lista["Lat y long Inicio"] = f'[{viaje["pickup_latitude"]},{viaje["pickup_longitude"]}]'
+            lista["F/T Fin"] = viaje["dropoff_datetime"]
+            lista["Lat y long Fin"] = f'[{viaje["dropoff_latitude"]},{viaje["dropoff_longitude"]}]'
+            lista["Distancia (millas)"] = viaje["trip_distance"]
+            lista["Costo total"] = viaje["total_amount"]
+            ultimos.append(lista)
+
+        print("\nPrimeros viajes:")
+        print(tb.tabulate(primeros, headers="keys", tablefmt="simple_grid"))
+        print("\nÚltimos viajes:")
+        print(tb.tabulate(ultimos, headers="keys", tablefmt="simple_grid"))
+
+    else:
+        m = []
+        for k in range(lt.size(viajes_organizados)):
+            viaje = lt.get_element(viajes_organizados, k)
+            lista = {}
+            lista["F/T Inicio"] = viaje["pickup_datetime"]
+            lista["Lat y long Inicio"] = f'[{viaje["pickup_latitude"]},{viaje["pickup_longitude"]}]'
+            lista["F/T Fin"] = viaje["dropoff_datetime"]
+            lista["Lat y long Fin"] = f'[{viaje["dropoff_latitude"]},{viaje["dropoff_longitude"]}]'
+            lista["Distancia (millas)"] = viaje["trip_distance"]
+            lista["Costo total"] = viaje["total_amount"]
+            m.append(lista)
+
+        print("\nTodos los viajes encontrados:")
+        print(tb.tabulate(m, headers="keys", tablefmt="simple_grid"))
 
 
 def print_req_6(control):

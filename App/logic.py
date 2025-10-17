@@ -259,14 +259,58 @@ def mapa_req5(catalog):
         catalog["fecha_hora_term"] = mapa_req5
     return catalog
 
-def req_5(catalog):
+def sort_criteria_fecha_desc(v1, v2):
+    """
+    Ordena por fecha de terminación (dropoff_datetime) de más reciente a más antiguo
+    """
+    f1 = datetime.datetime.strptime(v1["dropoff_datetime"], "%Y-%m-%d %H:%M:%S")
+    f2 = datetime.datetime.strptime(v2["dropoff_datetime"], "%Y-%m-%d %H:%M:%S")
+    return f1 > f2  # más reciente primero
+
+def req_5(catalog, fecha_hora, muestra):
+    """
+    Requerimiento 5: obtener trayectos en una fecha y hora de terminación específicas
+    """
+    # --- asegurar que el mapa exista ---
+    if "fecha_hora_term" not in catalog:
+        catalog = mapa_req5(catalog)   # crea el mapa si no existe
+
+    mapa = catalog["fecha_hora_term"]
+
     start = get_time()
-    catalog = mapa_req5(catalog)
-    
-    
+
+    # --- buscar la llave ---
+    if not mp.contains(mapa, fecha_hora):
+        end = get_time()
+        tiempo = delta_time(start, end)
+        return tiempo, 0, lt.new_list()  # si no hay nada
+
+    entry = mp.get(mapa, fecha_hora)
+    lista_viajes = me.get_value(entry)
+    total = lt.size(lista_viajes)
+
+    # --- ordenar por fecha de terminación descendente ---
+    viajes_ordenados = lt.quick_sort(lista_viajes, sort_criteria_fecha_desc)
+
+    # --- seleccionar los primeros y últimos N (si hay suficientes) ---
+    if total >= 2 * muestra:
+        primeros = lt.new_list()
+        for i in range(muestra):
+            lt.add_last(primeros, lt.get_element(viajes_ordenados, i))
+
+        ultimos = lt.new_list()
+        for i in range(total - muestra, total):
+            lt.add_last(ultimos, lt.get_element(viajes_ordenados, i))
+
+        viajes_final = {"Primeros": primeros, "Ultimos": ultimos}
+    else:
+        viajes_final = viajes_ordenados
+
     end = get_time()
     tiempo = delta_time(start, end)
-    return tiempo
+    return tiempo, total, viajes_final
+
+
 
 def sort_crit6(element_1, element_2):
     is_sorted = False
