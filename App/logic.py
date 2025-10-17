@@ -187,7 +187,7 @@ def req_3(catalog, d_ini, d_fin, n):
             trayectos += 1
             lt.add_last(filtrado, viaje)
 
-    lt.merge_sort(filtrado, sort_crit_distancia) 
+    filtrado = lt.quick_sort(filtrado, sort_crit_dist)
 
     end = get_time()
     tiempo = delta_time(start, end)
