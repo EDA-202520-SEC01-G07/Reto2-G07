@@ -73,14 +73,14 @@ def load_data(catalog, filename):
 
 # Funciones de consulta sobre el catálogo
 
-def sort_criteria_viajes(element_1, element_2):
+def sort_criteria_antiguo(element_1, element_2):
     f1 = datetime.datetime.strptime(element_1["pickup_datetime"], "%Y-%m-%d %H:%M:%S")
     f2 = datetime.datetime.strptime(element_2["pickup_datetime"], "%Y-%m-%d %H:%M:%S")
     is_sorted = False
     if f1 < f2: #Más antiguo al más reciente
         is_sorted = True
     return is_sorted
-sort_crit = sort_criteria_viajes
+sort_crit = sort_criteria_antiguo
 
 def req_1(catalog, inicio, final, muestra): #preguntar cómo se organiza una lista, preguntar formato
     start = get_time()
@@ -200,8 +200,7 @@ def req_3(catalog, d_ini, d_fin, n):
     tiempo = delta_time(start, end)
     return tiempo, trayectos, filtrado
 
-#preguntar si el más reciente al más antiguo es del dropoff o pickup
-def sort_criteria_viajes(element_1, element_2):
+def sort_criteria_reciente(element_1, element_2):
     f1 = datetime.datetime.strptime(element_1["dropoff_datetime"], "%Y-%m-%d %H:%M:%S")
     f2 = datetime.datetime.strptime(element_2["dropoff_datetime"], "%Y-%m-%d %H:%M:%S")
     is_sorted = False
@@ -209,8 +208,7 @@ def sort_criteria_viajes(element_1, element_2):
         is_sorted = True
     return is_sorted
 
-sort_crit = sort_criteria_viajes
-
+sort_crit = sort_criteria_reciente
 def mapa_req4(catalog):
     catalog["fecha_term"] = mp.new_map(1000, 0.5) #req4 Tabla Hash llave sea la fecha de terminación
     mapa_req4 = catalog["fecha_term"]
@@ -258,50 +256,38 @@ def req_4(catalog, fecha_terminacion, tiempo_ref, criterio, muestra):
 
 
 def mapa_req5(catalog):
-    catalog["fecha_hora_term"] = mp.new_map(1000*24, 0.5) #req5 Tabla Hash llave sea fecha y hora terminación
+    catalog["fecha_hora_term"] = mp.new_map(600*24, 0.5) #req5 Tabla Hash llave sea fecha y hora terminación
     mapa_req5 = catalog["fecha_hora_term"]
     
     for i in range(lt.size(catalog["viajes"])):
         viaje = lt.get_element(catalog["viajes"], i)
-        
         formato = viaje["dropoff_datetime"][:13]
-        if mp.contains(mapa_req5, formato) == False:
-            mapa_req5 = mp.put(mapa_req5, formato, lt.new_list())
-        l = mp.get(mapa_req5, formato)
-        var = lt.add_last(l, viaje)
-        mp.put(mapa_req5, formato, var)
         
-        catalog["fecha_hora_term"] = mapa_req5
+        l = mp.get(mapa_req5, formato)
+        if l is None:
+            lista = lt.new_list()
+            lt.add_last(lista, viaje)
+            mp.put(mapa_req5, formato, lista)
+        else:
+            lt.add_last(l, viaje)
     return catalog
 
-def sort_criteria_fecha_desc(v1, v2):
-    """
-    Ordena por fecha de terminación (dropoff_datetime) de más reciente a más antiguo
-    """
-    f1 = datetime.datetime.strptime(v1["dropoff_datetime"], "%Y-%m-%d %H:%M:%S")
-    f2 = datetime.datetime.strptime(v2["dropoff_datetime"], "%Y-%m-%d %H:%M:%S")
-    return f1 > f2  # más reciente primero
-
+sort_criteria_fecha_desc = sort_criteria_reciente
 def req_5(catalog, fecha_hora, muestra):
     """
     Requerimiento 5: obtener trayectos en una fecha y hora de terminación específicas
     """
-    # --- asegurar que el mapa exista ---
-    if "fecha_hora_term" not in catalog:
-        catalog = mapa_req5(catalog)   # crea el mapa si no existe
-
+    start = get_time()
+    mapa_req5(catalog)
     mapa = catalog["fecha_hora_term"]
 
-    start = get_time()
-
-    # --- buscar la llave ---
-    if not mp.contains(mapa, fecha_hora):
+    entry = mp.get(mapa, fecha_hora)
+    print(entry)
+    if entry is None:
         end = get_time()
         tiempo = delta_time(start, end)
         return tiempo, 0, lt.new_list()  # si no hay nada
-
-    entry = mp.get(mapa, fecha_hora)
-    lista_viajes = me.get_value(entry)
+    lista_viajes = entry
     total = lt.size(lista_viajes)
 
     # --- ordenar por fecha de terminación descendente ---
@@ -309,14 +295,8 @@ def req_5(catalog, fecha_hora, muestra):
 
     # --- seleccionar los primeros y últimos N (si hay suficientes) ---
     if total >= 2 * muestra:
-        primeros = lt.new_list()
-        for i in range(muestra):
-            lt.add_last(primeros, lt.get_element(viajes_ordenados, i))
-
-        ultimos = lt.new_list()
-        for i in range(total - muestra, total):
-            lt.add_last(ultimos, lt.get_element(viajes_ordenados, i))
-
+        primeros = lt.sub_list(viajes_ordenados, lt.size(viajes_ordenados)-muestra,lt.size(viajes_ordenados))
+        ultimos = lt.sub_list(viajes_ordenados, 0, muestra)
         viajes_final = {"Primeros": primeros, "Ultimos": ultimos}
     else:
         viajes_final = viajes_ordenados
@@ -324,8 +304,6 @@ def req_5(catalog, fecha_hora, muestra):
     end = get_time()
     tiempo = delta_time(start, end)
     return tiempo, total, viajes_final
-
-
 
 
 def sort_crit6(element_1, element_2):
