@@ -256,51 +256,39 @@ def req_4(catalog, fecha_terminacion, tiempo_ref, criterio, muestra):
 
 
 def mapa_req5(catalog):
-    # Crear mapa si no existe
-    if "fecha_hora_term" not in catalog:
-        catalog["fecha_hora_term"] = mp.new_map(1000 * 24, 0.5)
-    mapa = catalog["fecha_hora_term"]
-
-    # Recorrer todos los viajes
+    catalog["fecha_hora_term"] = mp.new_map(600*24, 0.5) #req5 Tabla Hash llave sea fecha y hora terminación
+    mapa_req5 = catalog["fecha_hora_term"]
+    
     for i in range(lt.size(catalog["viajes"])):
         viaje = lt.get_element(catalog["viajes"], i)
-        formato = viaje["dropoff_datetime"][:13]  # AAAA-MM-DD HH
-
-        # Si no existe la llave, crear lista
-        if not mp.contains(mapa, formato):
+        viaje["pickup_longitude"] = round(viaje["pickup_longitude"],2)
+        viaje["pickup_latitude"] = round(viaje["pickup_latitude"],2)
+        viaje["dropoff_longitude"] = round(viaje["dropoff_longitude"],2)
+        viaje["dropoff_latitude"] = round(viaje["dropoff_latitude"],2)
+        formato = viaje["dropoff_datetime"][:13]
+        
+        l = mp.get(mapa_req5, formato)
+        if l is None:
             lista = lt.new_list()
             lt.add_last(lista, viaje)
-            mp.put(mapa, formato, lista)
+            mp.put(mapa_req5, formato, lista)
         else:
-            lista = mp.get(mapa, formato)
-            lt.add_last(lista, viaje)
-
-    catalog["fecha_hora_term"] = mapa
+            lt.add_last(l, viaje)
     return catalog
 
 
-
-def sort_criteria_fecha_desc(v1, v2):
-    """
-    Ordena por fecha de terminación (dropoff_datetime) de más reciente a más antiguo
-    """
-    f1 = datetime.datetime.strptime(v1["dropoff_datetime"], "%Y-%m-%d %H:%M:%S")
-    f2 = datetime.datetime.strptime(v2["dropoff_datetime"], "%Y-%m-%d %H:%M:%S")
-    return f1 > f2  # más reciente primero
-
+sort_criteria_fecha_desc = sort_criteria_reciente
 def req_5(catalog, fecha_hora, muestra):
-    if "fecha_hora_term" not in catalog:
-        catalog = mapa_req5(catalog)
-
-    mapa = catalog["fecha_hora_term"]
     start = get_time()
-
-    if not mp.contains(mapa, fecha_hora):
+    catalog = mapa_req5(catalog)
+    mapa = catalog["fecha_hora_term"]
+    
+    lista_viajes = mp.get(mapa, fecha_hora)
+    if lista_viajes is None:
         end = get_time()
         tiempo = delta_time(start, end)
         return tiempo, 0, lt.new_list()
 
-    lista_viajes = mp.get(mapa, fecha_hora)
     total = lt.size(lista_viajes)
 
     viajes_ordenados = lt.quick_sort(lista_viajes, sort_criteria_fecha_desc)
@@ -315,9 +303,6 @@ def req_5(catalog, fecha_hora, muestra):
     end = get_time()
     tiempo = delta_time(start, end)
     return tiempo, total, viajes_final
-
-
-
 
 
 def sort_crit6(element_1, element_2):

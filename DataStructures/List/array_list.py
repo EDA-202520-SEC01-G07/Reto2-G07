@@ -182,7 +182,7 @@ def merge(list_1, list_2, sort_crit):
     return merged_list
 
 def quick_sort(list, sort_crit):
-    return quick_sort_1(list, 0, size(list)-1, sort_crit)
+    return quick_sort_1(list, 0, int(size(list))-1, sort_crit)
 
 def quick_sort_1(lst,io,hi,sort_crit):
     if io >= hi:
