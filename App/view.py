@@ -249,26 +249,72 @@ def print_req_2(control):
         print("\n(Formato de salida no reconocido por el view)")
 
     
+
 def print_req_3(control):
     """
-        Función que imprime la solución del Requerimiento 3 en consola
+        Imprime la solución del Requerimiento 3 (distancia de trayectos)
     """
-    d_ini = float(input("Ingrese la distancia inicial (en millas): "))
-    d_fin = float(input("Ingrese la distancia final (en millas): "))
-    muestra = int(input("Ingrese el número de trayectos a mostrar (N): "))
+    distancia_min = float(input("Ingrese la distancia mínima (en millas): "))
+    distancia_max = float(input("Ingrese la distancia máxima (en millas): "))
+    cantidad_mostrar = int(input("Ingrese el número de trayectos a mostrar (N): "))
 
-    tiempo, trayectos, filtrado, iniciales, finales= logic.req_3(control, d_ini, d_fin, muestra)
-    if trayectos <= muestra*2:
-        print("Tiempo de ejecución del requerimiento en [ms]: " + str(tiempo))
-        print("Total de trayectos dentro del rango de distancia: " + str(trayectos))
-        print(str(filtrado))
+    tiempo, total_trayectos, viajes_ordenados = logic.req_3(control, distancia_min, distancia_max, cantidad_mostrar)
+
+    print("\nTiempo de ejecución del requerimiento en [ms]:", round(tiempo, 5))
+    print("Total de trayectos dentro del rango de distancia:", total_trayectos, "\n")
+
+    # Si hay suficientes viajes, mostrar primeros N y últimos N
+    if total_trayectos >= 2 * cantidad_mostrar:
+        primeros = []
+        for i in range(cantidad_mostrar):
+            viaje = lt.get_element(viajes_ordenados, i)
+            fila = {
+                "Fecha/Hora inicio": viaje["pickup_datetime"],
+                "Coordenadas inicio": f'[{viaje["pickup_latitude"]}, {viaje["pickup_longitude"]}]',
+                "Fecha/Hora fin": viaje["dropoff_datetime"],
+                "Coordenadas fin": f'[{viaje["dropoff_latitude"]}, {viaje["dropoff_longitude"]}]',
+                "Distancia (millas)": viaje["trip_distance"],
+                "Costo total ($)": viaje["total_amount"]
+            }
+            primeros.append(fila)
+
+        print("Primeros trayectos del rango:")
+        print(tb.tabulate(primeros, headers="keys", tablefmt="simple_grid"))
+
+        ultimos = []
+        for i in range(lt.size(viajes_ordenados) - cantidad_mostrar, lt.size(viajes_ordenados)):
+            viaje = lt.get_element(viajes_ordenados, i)
+            fila = {
+                "Fecha/Hora inicio": viaje["pickup_datetime"],
+                "Coordenadas inicio": f'[{viaje["pickup_latitude"]}, {viaje["pickup_longitude"]}]',
+                "Fecha/Hora fin": viaje["dropoff_datetime"],
+                "Coordenadas fin": f'[{viaje["dropoff_latitude"]}, {viaje["dropoff_longitude"]}]',
+                "Distancia (millas)": viaje["trip_distance"],
+                "Costo total ($)": viaje["total_amount"]
+            }
+            ultimos.append(fila)
+
+        print("\nÚltimos trayectos del rango:")
+        print(tb.tabulate(ultimos, headers="keys", tablefmt="simple_grid"))
+
+    # Si hay pocos viajes, mostrar todos
     else:
-        print("Tiempo de ejecución del requerimiento en [ms]: " + str(tiempo))
-        print("Total de trayectos dentro del rango de distancia: " + str(trayectos))
-        print("\nPrimeros 5 trayectos del rango:\n")
-        print(iniciales)
-        print("\nÚltimos 5 trayectos del rango:\n")
-        print(finales)
+        todos = []
+        for i in range(lt.size(viajes_ordenados)):
+            viaje = lt.get_element(viajes_ordenados, i)
+            fila = {
+                "Fecha/Hora inicio": viaje["pickup_datetime"],
+                "Coordenadas inicio": f'[{viaje["pickup_latitude"]}, {viaje["pickup_longitude"]}]',
+                "Fecha/Hora fin": viaje["dropoff_datetime"],
+                "Coordenadas fin": f'[{viaje["dropoff_latitude"]}, {viaje["dropoff_longitude"]}]',
+                "Distancia (millas)": viaje["trip_distance"],
+                "Costo total ($)": viaje["total_amount"]
+            }
+            todos.append(fila)
+
+        print("Trayectos encontrados en el rango:")
+        print(tb.tabulate(todos, headers="keys", tablefmt="simple_grid"))
+
     
 
 def print_req_4(control):

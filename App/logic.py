@@ -126,14 +126,6 @@ def req_1(catalog, inicio, final, muestra): #preguntar cómo se organiza una lis
     end = get_time()
     tiempo = delta_time(start, end)
     return tiempo
-def sort_crit_distancia(v1, v2):
-    if v1["trip_distance"] > v2["trip_distance"]:
-        return True
-    elif v1["trip_distance"] == v2["trip_distance"]:
-        return v1["total_amount"] > v2["total_amount"]
-    else:
-        return False
-sort_crit_dist= sort_crit_distancia
 
 def sort_crit2(element_1, element_2):
     is_sorted = False
@@ -197,59 +189,37 @@ def req_2(catalog,coord_ini, coord_fin, tamano_muestra):
     end= get_time()
     tiempo= delta_time(start,end)
     return tiempo,trayectos,viajes_orden
+def sort_crit_distancia(v1, v2):
+    # Mayor a menor por distancia
+    if v1["trip_distance"] > v2["trip_distance"]:
+        return True
+    elif v1["trip_distance"] == v2["trip_distance"]:
+        # Si tienen igual distancia: mayor a menor por total_amount
+        return v1["total_amount"] > v2["total_amount"]
+    else:
+        return False
 
-def req_3(catalog, d_ini,d_fin,n):
+
+sort_crit_dist= sort_crit_distancia
+
+def req_3(catalog, d_ini, d_fin, n):
     start = get_time()
-    tam= lt.size(catalog["viajes"])
-    trayectos= 0
-    filtrado=lt.new_list()
-    for i in range(0, tam):
-        viaje= lt.get_element(catalog["viajes"], i)
-        if viaje["trip_distance"] >= d_ini and viaje["trip_distance"] <= d_fin:
+    trayectos = 0
+    filtrado = lt.new_list()
+
+    for i in range(0, lt.size(catalog["viajes"])):
+        viaje = lt.get_element(catalog["viajes"], i)
+        if d_ini <= viaje["trip_distance"] <= d_fin:
             trayectos += 1
             lt.add_last(filtrado, viaje)
-    lt.merge_sort(filtrado, sort_crit_dist)
-    iniciales= lt.new_list()
-    finales= lt.new_list()
-    for j in range(0, 5):
-        viaje = lt.get_element(filtrado, j)
-        viaje_filtrado = {
-            "pickup_datetime": viaje["pickup_datetime"],
-            "pickup_coords": [viaje["pickup_latitude"], viaje["pickup_longitude"]],
-            "dropoff_datetime": viaje["dropoff_datetime"],
-            "dropoff_coords": [viaje["dropoff_latitude"], viaje["dropoff_longitude"]],
-            "trip_distance": viaje["trip_distance"],
-            "total_amount": viaje["total_amount"]
-        }
-        lt.add_last(iniciales, viaje_filtrado)
 
-    for k in range(trayectos - 5, trayectos):
-        viaje = lt.get_element(filtrado, k)
-        viaje_filtrado = {
-            "pickup_datetime": viaje["pickup_datetime"],
-            "pickup_coords": [viaje["pickup_latitude"], viaje["pickup_longitude"]],
-            "dropoff_datetime": viaje["dropoff_datetime"],
-            "dropoff_coords": [viaje["dropoff_latitude"], viaje["dropoff_longitude"]],
-            "trip_distance": viaje["trip_distance"],
-            "total_amount": viaje["total_amount"]
-        }
-        lt.add_last(finales, viaje_filtrado)
+    lt.merge_sort(filtrado, sort_crit_distancia) 
+
     end = get_time()
     tiempo = delta_time(start, end)
-    return tiempo, trayectos, filtrado, iniciales, finales
+    return tiempo, trayectos, filtrado
 
-def mapas(catalog):
-    catalog["fecha_term"] = mp.new_map(2000, 0.5) #req4 Tabla Hash llave sea la fecha de terminación
-    catalog["fecha_hora_term"] = mp.new_map(2000*24, 0.5) #req5 Tabla Hash llave sea fecha y hora terminación
-    catalog["barrio_recog"] = mp.new_map(1000, 0.5) #req6 Tabla Hash Barrio
-
-def req_4(catalog, fecha_terminacion, tiempo_ref, criterio, muestra):
-    start = get_time()
-    end = get_time()
-    tiempo = delta_time(start, end)    
-    return tiempo, trayectos, viajes_organizados
-
-def req_5(catalog):
+def req_5(catalog,fecha_hora):
     start = get_time()
     
     end = get_time()
