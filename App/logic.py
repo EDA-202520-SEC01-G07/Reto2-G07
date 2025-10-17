@@ -183,6 +183,11 @@ def req_3(catalog, d_ini, d_fin, n):
 
     for i in range(0, lt.size(catalog["viajes"])):
         viaje = lt.get_element(catalog["viajes"], i)
+        viaje["pickup_longitude"] = round(viaje["pickup_longitude"],2)
+        viaje["pickup_latitude"] = round(viaje["pickup_latitude"],2)
+        viaje["dropoff_longitude"] = round(viaje["dropoff_longitude"],2)
+        viaje["dropoff_latitude"] = round(viaje["dropoff_latitude"],2)
+            
         if d_ini <= viaje["trip_distance"] <= d_fin:
             trayectos += 1
             lt.add_last(filtrado, viaje)
