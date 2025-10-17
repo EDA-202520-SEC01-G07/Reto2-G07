@@ -270,9 +270,9 @@ def print_req_3(control):
             viaje = lt.get_element(viajes_ordenados, i)
             fila = {
                 "Fecha/Hora inicio": viaje["pickup_datetime"],
-                "Coordenadas inicio": f'[{viaje["pickup_latitude"]}, {viaje["pickup_longitude"]}]',
+                "Coord inicio": f'[{viaje["pickup_latitude"]}, {viaje["pickup_longitude"]}]',
                 "Fecha/Hora fin": viaje["dropoff_datetime"],
-                "Coordenadas fin": f'[{viaje["dropoff_latitude"]}, {viaje["dropoff_longitude"]}]',
+                "Coord fin": f'[{viaje["dropoff_latitude"]}, {viaje["dropoff_longitude"]}]',
                 "Distancia (millas)": viaje["trip_distance"],
                 "Costo total ($)": viaje["total_amount"]
             }
@@ -286,9 +286,9 @@ def print_req_3(control):
             viaje = lt.get_element(viajes_ordenados, i)
             fila = {
                 "Fecha/Hora inicio": viaje["pickup_datetime"],
-                "Coordenadas inicio": f'[{viaje["pickup_latitude"]}, {viaje["pickup_longitude"]}]',
+                "Coord inicio": f'[{viaje["pickup_latitude"]}, {viaje["pickup_longitude"]}]',
                 "Fecha/Hora fin": viaje["dropoff_datetime"],
-                "Coordenadas fin": f'[{viaje["dropoff_latitude"]}, {viaje["dropoff_longitude"]}]',
+                "Coord fin": f'[{viaje["dropoff_latitude"]}, {viaje["dropoff_longitude"]}]',
                 "Distancia (millas)": viaje["trip_distance"],
                 "Costo total ($)": viaje["total_amount"]
             }
@@ -304,9 +304,9 @@ def print_req_3(control):
             viaje = lt.get_element(viajes_ordenados, i)
             fila = {
                 "Fecha/Hora inicio": viaje["pickup_datetime"],
-                "Coordenadas inicio": f'[{viaje["pickup_latitude"]}, {viaje["pickup_longitude"]}]',
+                "Coord inicio": f'[{viaje["pickup_latitude"]}, {viaje["pickup_longitude"]}]',
                 "Fecha/Hora fin": viaje["dropoff_datetime"],
-                "Coordenadas fin": f'[{viaje["dropoff_latitude"]}, {viaje["dropoff_longitude"]}]',
+                "Coord fin": f'[{viaje["dropoff_latitude"]}, {viaje["dropoff_longitude"]}]',
                 "Distancia (millas)": viaje["trip_distance"],
                 "Costo total ($)": viaje["total_amount"]
             }
@@ -321,15 +321,10 @@ def print_req_4(control):
     """
         Función que imprime la solución del Requerimiento 4 en consola
     """
-    #f_terminacion = input("Indique la fecha de terminación: ")
-    #t_ref = input("Indique el tiempo de referencia: ")
-    #criterio = input("Indique si quiere los viajes antes o después al tiempo de referencia (sin tildes): ")
-    #muestra = int(input("Indique la muestra del viaje: "))
-    # BORRAR; SOLO PARA PRUEBAS
-    f_terminacion = "2015-01-20"
-    t_ref = "00:05:00"
-    criterio = "Despues"
-    muestra = 1
+    f_terminacion = input("Indique la fecha de terminación: ")
+    t_ref = input("Indique el tiempo de referencia: ")
+    criterio = input("Indique si quiere los viajes antes o después al tiempo de referencia (sin tildes): ")
+    muestra = int(input("Indique la muestra del viaje: "))
     tiempo, trayectos, viajes_organizados = logic.req_4(control, f_terminacion, t_ref, criterio, muestra)
     print("Tiempo de ejecución en ms: " + str(round(tiempo,5)))
     print("Trayectos ["+criterio+"] que cumplieron los requisitos de fecha y hora de terminación: " + str(trayectos))

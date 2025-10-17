@@ -216,8 +216,8 @@ def mapa_req4(catalog):
     return catalog
 
 def req_4(catalog, fecha_terminacion, tiempo_ref, criterio, muestra):
-    catalog = mapa_req4(catalog)   
     start = get_time()
+    catalog = mapa_req4(catalog)   
     criterio = criterio.lower()
     trayectos = 0
     viajes_filtrados = lt.new_list()
@@ -260,9 +260,9 @@ def mapa_req5(catalog):
     return catalog
 
 def req_5(catalog):
-    catalog = mapa_req5(catalog)
-    print(catalog["fecha_hora_term"])
     start = get_time()
+    catalog = mapa_req5(catalog)
+    
     
     end = get_time()
     tiempo = delta_time(start, end)
@@ -292,9 +292,8 @@ def mapa_req6(catalog):
     return catalog
 
 def req_6(catalog, barrio, hora_ini, hora_fin, tamano_muestra):
-    catalog = mapa_req6(catalog)
-    print(catalog["barrio_recog"])
     start = get_time()
+    catalog = mapa_req6(catalog)
     trayectos = 0
     viajes_filtrados = lt.new_list()
     tamano= lt.size(catalog["viajes"])
