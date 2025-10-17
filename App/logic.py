@@ -219,9 +219,29 @@ def mapa_req4(catalog):
 def req_4(catalog, fecha_terminacion, tiempo_ref, criterio, muestra):
     catalog = mapa_req4(catalog)   
     start = get_time()
+    criterio = criterio.lower()
+    trayectos = 0
+    viajes_filtrados = lt.new_list()
+    #Organizar viajes con el filtro de fecha terminación y con el criterio de Antes o Después
+    for i in range(lt.size(catalog["viajes"])):
+        viaje = lt.get_element(catalog["viajes"], i)
+        if viaje["dropoff_date"] == fecha_terminacion: #Filtro fecha
+            viaje["pickup_longitude"] = round(viaje["pickup_longitude"],2)
+            viaje["pickup_latitude"] = round(viaje["pickup_latitude"],2)
+            viaje["dropoff_longitude"] = round(viaje["dropoff_longitude"],2)
+            viaje["dropoff_latitude"] = round(viaje["dropoff_latitude"],2)
+            if criterio == "antes" and viaje["dropoff_time"] < tiempo_ref:
+                trayectos += 1
+                lt.add_last(viajes_filtrados, viaje)
+            elif criterio == "despues" and viaje["dropoff_time"] > tiempo_ref:
+                trayectos += 1
+                lt.add_last(viajes_filtrados, viaje)
+    
+    viajes_organizados = lt.quick_sort(viajes_filtrados, sort_crit)
     end = get_time()
     tiempo = delta_time(start, end)    
     return tiempo, trayectos, viajes_organizados
+
 
 def mapa_req5(catalog):
     catalog["fecha_hora_term"] = mp.new_map(1000*24, 0.5) #req5 Tabla Hash llave sea fecha y hora terminación
