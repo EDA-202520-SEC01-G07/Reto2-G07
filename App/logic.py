@@ -13,16 +13,10 @@ def new_logic():
     """
     #TODO: Llama a las funciónes de creación de las estructuras de datos
     catalog = {"viajes": None, 
-               "barrios": None,
-               "fecha_term": None,
-               "fecha_hora_term": None,
-               "barrio_recog": None}
+               "barrios": None}
     
     catalog["viajes"] = lt.new_list()
     catalog["barrios"] = load_data_neigh()
-    catalog["fecha_term"] = mp.new_map(600, 0.5) #req4 Tabla Hash llave sea la fecha de terminación
-    catalog["fecha_hora_term"] = mp.new_map(600*24, 0.5) #req5 Tabla Hash llave sea fecha y hora terminación
-    catalog["barrio_recog"] = mp.new_map(500, 0.5) #req6 Tabla Hash Barrio
     return catalog
 #Función auxiliar apara cargar datos del nyc-neighborhoods.csv
 def load_data_neigh():       
@@ -71,29 +65,13 @@ def load_data(catalog, filename):
         viaje["improvement_surcharge"] = float(viaje["improvement_surcharge"])
         viaje["total_amount"] = float(viaje["total_amount"])
 
-        lt.add_last(catalog["viajes"], viaje)  
-    
+        lt.add_last(catalog["viajes"], viaje) 
         id += 1
     end = get_time()
     tiempo = delta_time(start, end)
     return tiempo
 
 # Funciones de consulta sobre el catálogo
-
-def get_data(catalog, id):
-    """
-    Retorna un dato por su ID.
-    """
-    #TODO: Consulta en las Llamar la función del modelo para obtener un dato
-    tam = lt.size(catalog["viajes"])
-    if id >= 0 and id < tam:
-        for i in range(0,tam):
-            dato = lt.get_element(catalog["viajes"], i)
-            if id == dato["id"]:
-                return dato
-    else:
-        return None
-
 
 def sort_criteria_viajes(element_1, element_2):
     f1 = datetime.datetime.strptime(element_1["pickup_datetime"], "%Y-%m-%d %H:%M:%S")
@@ -194,12 +172,24 @@ def req_3(catalog):
     tiempo = delta_time(start, end)
     return tiempo
 
-def mapas(catalog):
-    catalog["fecha_term"] = mp.new_map(2000, 0.5) #req4 Tabla Hash llave sea la fecha de terminación
-    catalog["fecha_hora_term"] = mp.new_map(2000*24, 0.5) #req5 Tabla Hash llave sea fecha y hora terminación
-    catalog["barrio_recog"] = mp.new_map(1000, 0.5) #req6 Tabla Hash Barrio
+def mapa_req4(catalog):
+    catalog["fecha_term"] = mp.new_map(1000, 0.5) #req4 Tabla Hash llave sea la fecha de terminación
+    mapa_req4 = catalog["fecha_term"]
+            
+    for i in range(lt.size(catalog["viajes"])):
+        viaje = lt.get_element(catalog["viajes"], i)
+        if mp.contains(mapa_req4, viaje["dropoff_date"]) == False:
+            l = lt.new_list()
+            lt.add_last(l, viaje)
+            mapa_req4 = mp.put(mapa_req4, viaje["dropoff_date"], l)
+        else: 
+            l = mp.get(mapa_req4, viaje["dropoff_date"])
+            lt.add_last(l, viaje)
+        catalog["fecha_term"] = mapa_req4
+    return catalog
 
 def req_4(catalog, fecha_terminacion, tiempo_ref, criterio, muestra):
+    catalog = mapa_req4(catalog)   
     start = get_time()
     criterio = criterio.lower()
     trayectos = 0
@@ -224,18 +214,58 @@ def req_4(catalog, fecha_terminacion, tiempo_ref, criterio, muestra):
     tiempo = delta_time(start, end)    
     return tiempo, trayectos, viajes_organizados
 
+def mapa_req5(catalog):
+    catalog["fecha_hora_term"] = mp.new_map(1000*24, 0.5) #req5 Tabla Hash llave sea fecha y hora terminación
+    mapa_req5 = catalog["fecha_hora_term"]
+    
+    for i in range(lt.size(catalog["viajes"])):
+        viaje = lt.get_element(catalog["viajes"], i)
+        
+        formato = viaje["dropoff_datetime"][:13]
+        if mp.contains(mapa_req5, formato) == False:
+            mapa_req5 = mp.put(mapa_req5, formato, lt.new_list())
+        l = mp.get(mapa_req5, formato)
+        var = lt.add_last(l, viaje)
+        mp.put(mapa_req5, formato, var)
+        
+        catalog["fecha_hora_term"] = mapa_req5
+    return catalog
+
 def req_5(catalog):
+    catalog = mapa_req5(catalog)
+    print(catalog["fecha_hora_term"])
     start = get_time()
     
     end = get_time()
     tiempo = delta_time(start, end)
     return tiempo
+
 def sort_crit6(element_1, element_2):
     is_sorted = False
     if element_1["pickup_time"] > element_2["pickup_time"]:
         is_sorted = True
     return is_sorted
+
+def mapa_req6(catalog):
+    catalog["barrio_recog"] = mp.new_map(500, 0.5) #req6 Tabla Hash Barrio
+    mapa_req6 = catalog["barrio_recog"]
+
+    for i in range(lt.size(catalog["viajes"])):
+        viaje = lt.get_element(catalog["viajes"], i)
+        
+        barrio = barrio_mas_cercano(viaje["pickup_latitude"],viaje["pickup_longitude"],catalog["barrios"])
+        if mp.contains(mapa_req6, barrio) == False:
+            mapa_req6 = mp.put(mapa_req6, barrio, lt.new_list())
+        l = mp.get(mapa_req6, barrio)
+        var = lt.add_last(l, viaje)
+        mp.put(mapa_req6, barrio, var)
+        
+        catalog["barrio_recog"] = mapa_req6
+    return catalog
+
 def req_6(catalog, barrio, hora_ini, hora_fin, tamano_muestra):
+    catalog = mapa_req6(catalog)
+    print(catalog["barrio_recog"])
     start = get_time()
     trayectos = 0
     viajes_filtrados = lt.new_list()
