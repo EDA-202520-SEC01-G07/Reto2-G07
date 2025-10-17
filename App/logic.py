@@ -100,10 +100,6 @@ def req_1(catalog, inicio, final, muestra): #preguntar cómo se organiza una lis
     end = get_time()
     tiempo = delta_time(start, end)
     return tiempo, trayectos, viajes_organizados
-    
-    end = get_time()
-    tiempo = delta_time(start, end)
-    return tiempo
 
 def sort_crit2(element_1, element_2):
     is_sorted = False
@@ -196,9 +192,6 @@ def req_3(catalog, d_ini, d_fin, n):
     end = get_time()
     tiempo = delta_time(start, end)
     return tiempo, trayectos, filtrado
-
-def req_5(catalog,fecha_hora):
-    return tiempo, trayectos, filtrado, iniciales, finales
 
 def mapa_req4(catalog):
     catalog["fecha_term"] = mp.new_map(1000, 0.5) #req4 Tabla Hash llave sea la fecha de terminación
