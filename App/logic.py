@@ -327,25 +327,22 @@ def mapa_req6(catalog):
 def req_6(catalog, barrio, hora_ini, hora_fin, tamano_muestra):
     start = get_time()
     catalog = mapa_req6(catalog)
-    mapa = catalog["barrio_recog"]
+    lista = mp.get(catalog["barrio_recog"], barrio)
     
     trayectos = 0
     viajes_filtrados = lt.new_list()
-    tamano= lt.size(catalog["viajes"])
+    tamano= lt.size(lista)
     for i in range(0, tamano):
-        viaje=lt.get_element(catalog["viajes"], i)
-        lat=float(viaje["pickup_latitude"])
-        lon=float(viaje["pickup_longitude"])
-        barrio_rec = barrio_mas_cercano(lat, lon, catalog["barrios"])
-        if barrio_rec == barrio:
-            hora =int(viaje["pickup_datetime"].split(" ")[1].split(":")[0])
-            if int(hora_ini) <= hora and hora <= int(hora_fin):
-                trayectos += 1
-                viaje["pickup_longitude"] = round(viaje["pickup_longitude"],2)
-                viaje["pickup_latitude"] = round(viaje["pickup_latitude"],2)
-                viaje["dropoff_longitude"] = round(viaje["dropoff_longitude"],2)
-                viaje["dropoff_latitude"] = round(viaje["dropoff_latitude"],2)
-                lt.add_last(viajes_filtrados, viaje)
+        viaje=lt.get_element(lista, i)
+        
+        hora =int(viaje["pickup_datetime"].split(" ")[1].split(":")[0])
+        if int(hora_ini) <= hora and hora <= int(hora_fin):
+            trayectos += 1
+            viaje["pickup_longitude"] = round(viaje["pickup_longitude"],2)
+            viaje["pickup_latitude"] = round(viaje["pickup_latitude"],2)
+            viaje["dropoff_longitude"] = round(viaje["dropoff_longitude"],2)
+            viaje["dropoff_latitude"] = round(viaje["dropoff_latitude"],2)
+            lt.add_last(viajes_filtrados, viaje)
     viajes_orden = lt.quick_sort(viajes_filtrados, sort_crit6)
     end = get_time()
     tiempo = delta_time(start, end)
