@@ -402,51 +402,56 @@ def print_req_6(control):
     barrio = input("Barrio: ")
     hora_ini = input("Hora inicial (HH): ")
     hora_fin = input("Hora final (HH): ")
-    N = int(input("Tamaño de la muestra: "))
+    muestra = int(input("Tamaño de la muestra: "))
 
-    t, total, viajes = logic.req_6(control, barrio, hora_ini, hora_fin, N)
-
+    t, trayectos, viajes_organizados = logic.req_6(control, barrio, hora_ini, hora_fin, muestra)
+    t = round(t, 5)
     print("\n=== Requerimiento 6: Trayectos por barrio y rango de horas ===")
     print(f"Tiempo (ms): {t}")
-    print(f"Trayectos filtrados: {total}")
 
-    if "Primeros viajes:" in viajes:
-        for titulo in ("Primeros viajes:", "Últimos viajes:"):
-            print(f"\n-- {titulo[:-1]} --")
-            lst = viajes[titulo]
-            sz = lt.size(lst)
-            i = 0
-            while i < sz:
-                info = lt.get_element(lst, i)
-                fin_txt = info.get('Fecha y tiempo de terminación')
-                if fin_txt is None:
-                    fin_txt = info.get('Fecha y hora de terminación')
-                print(f"  • ID: {info['Id_trayecto']}")
-                print(f"    Recogida: {info['Fecha y tiempo recogida']}")
-                print(f"    [lat,lon] recogida: {info['Latitud y longitud recogida']}")
-                print(f"    Terminación: {fin_txt}")
-                print(f"    [lat,lon] terminación: {info['Latitud y longitud de terminación']}")
-                print(f"    Distancia: {info['Distancia (millas)']} mi")
-                print(f"    Costo: ${info['Costo total']}\n")
-                i += 1
-    elif ("table" in viajes) and ("capacity" in viajes):
-        print("\n-- Todos los trayectos (<2N) --")
-        cap = viajes["capacity"]
-        i = 0
-        while i < cap:
-            e = lt.get_element(viajes["table"], i)
-            k = me.get_key(e)
-            if k is not None:
-                vals = e["value"]  # lt.list con 6 campos en orden
-                print(f"  • ID: {k}")
-                print(f"    Recogida: {lt.get_element(vals, 0)}")
-                print(f"    [lat,lon] recogida: {lt.get_element(vals, 1)}")
-                print(f"    Terminación: {lt.get_element(vals, 2)}")
-                print(f"    [lat,lon] terminación: {lt.get_element(vals, 3)}")
-                print(f"    Distancia: {lt.get_element(vals, 4)} mi")
-                print(f"    Costo: ${lt.get_element(vals, 5)}\n")
-            i += 1
-
+    if trayectos >= 2*muestra:
+        primeros = []
+        ultimos = []
+        for i in range(muestra):
+            viaje = lt.get_element(viajes_organizados, i)
+            lista = {}
+            lista["F/T Inicio"]=viaje["pickup_datetime"]
+            lista["Lat y long Inicio"]=f'[{viaje["pickup_latitude"]},{viaje["pickup_longitude"]}]'
+            lista["F/T Fin"]=viaje["dropoff_datetime"]
+            lista["Lat y long fin"]=f'[{viaje["dropoff_latitude"]},{viaje["dropoff_longitude"]}]'
+            lista["Distancia (millas)"]=viaje["trip_distance"]
+            lista["Costo total"]=viaje["total_amount"]
+            primeros.append(lista) 
+            
+        for j in range(lt.size(viajes_organizados)-muestra,lt.size(viajes_organizados)):
+            viaje = lt.get_element(viajes_organizados, j)
+            lista = {}
+            lista["F/T Inicio"]=viaje["pickup_datetime"]
+            lista["Lat y long Inicio"]=f'[{viaje["pickup_latitude"]},{viaje["pickup_longitude"]}]'
+            lista["F/T Fin"]=viaje["dropoff_datetime"]
+            lista["Lat y long fin"]=f'[{viaje["dropoff_latitude"]},{viaje["dropoff_longitude"]}]'
+            lista["Distancia (millas)"]=viaje["trip_distance"]
+            lista["Costo total"]=viaje["total_amount"]
+            ultimos.append(lista) 
+        print("\n Primeros viajes:")
+        print(tb.tabulate(primeros, headers="keys", tablefmt="simple_grid"))
+        print("\n Últimos viajes:")
+        print(tb.tabulate(ultimos, headers="keys", tablefmt="simple_grid"))
+        
+    elif trayectos < 2*muestra:
+        m = []
+        for k in range(lt.size(viajes_organizados)):
+            viaje = lt.get_element(viajes_organizados, k)
+            lista = {}
+            lista["F/T Inicio"]=viaje["pickup_datetime"]
+            lista["Lat y long Inicio"]=f'[{viaje["pickup_latitude"]},{viaje["pickup_longitude"]}]'
+            lista["F/T Fin"]=viaje["dropoff_datetime"]
+            lista["Lat y long fin"]=f'[{viaje["dropoff_latitude"]},{viaje["dropoff_longitude"]}]'
+            lista["Distancia (millas)"]=viaje["trip_distance"]
+            lista["Costo total"]=viaje["total_amount"]
+            m.append(lista)
+        print("\nTodos los viajes:")
+        print(tb.tabulate(m, headers="keys", tablefmt="simple_grid"))
     
 
 # Se crea la lógica asociado a la vista

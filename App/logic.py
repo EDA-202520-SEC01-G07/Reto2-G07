@@ -80,7 +80,6 @@ def sort_criteria_antiguo(element_1, element_2):
     if f1 < f2: #Más antiguo al más reciente
         is_sorted = True
     return is_sorted
-sort_crit = sort_criteria_antiguo
 
 def req_1(catalog, inicio, final, muestra): #preguntar cómo se organiza una lista, preguntar formato
     start = get_time()
@@ -96,7 +95,7 @@ def req_1(catalog, inicio, final, muestra): #preguntar cómo se organiza una lis
             viaje["dropoff_latitude"] = round(viaje["dropoff_latitude"],2)
             trayectos += 1
             lt.add_last(viajes_filtrados, viaje)
-    viajes_organizados = lt.quick_sort(viajes_filtrados, sort_crit)
+    viajes_organizados = lt.quick_sort(viajes_filtrados, sort_criteria_antiguo)
     end = get_time()
     tiempo = delta_time(start, end)
     return tiempo, trayectos, viajes_organizados
@@ -208,19 +207,18 @@ def sort_criteria_reciente(element_1, element_2):
         is_sorted = True
     return is_sorted
 
-sort_crit = sort_criteria_reciente
 def mapa_req4(catalog):
     catalog["fecha_term"] = mp.new_map(1000, 0.5) #req4 Tabla Hash llave sea la fecha de terminación
     mapa_req4 = catalog["fecha_term"]
          
     for i in range(lt.size(catalog["viajes"])):
         viaje = lt.get_element(catalog["viajes"], i)
-        if mp.contains(mapa_req4, viaje["dropoff_date"]) == False:
-            l = lt.new_list()
-            lt.add_last(l, viaje)
-            mapa_req4 = mp.put(mapa_req4, viaje["dropoff_date"], l)
+        l = mp.get(mapa_req4, viaje["dropoff_date"])
+        if l is None:
+            lista = lt.new_list()
+            lt.add_last(lista, viaje)
+            mapa_req4 = mp.put(mapa_req4, viaje["dropoff_date"], lista)
         else: 
-            l = mp.get(mapa_req4, viaje["dropoff_date"])
             lt.add_last(l, viaje)
         catalog["fecha_term"] = mapa_req4
     return catalog
@@ -249,7 +247,7 @@ def req_4(catalog, fecha_terminacion, tiempo_ref, criterio, muestra):
                 trayectos += 1
                 lt.add_last(viajes_filtrados, viaje)
     
-    viajes_organizados = lt.quick_sort(viajes_filtrados, sort_crit)
+    viajes_organizados = lt.quick_sort(viajes_filtrados, sort_criteria_reciente)
     end = get_time()
     tiempo = delta_time(start, end)    
     return tiempo, trayectos, viajes_organizados
@@ -276,8 +274,6 @@ def mapa_req5(catalog):
             lt.add_last(l, viaje)
     return catalog
 
-
-sort_criteria_fecha_desc = sort_criteria_reciente
 def req_5(catalog, fecha_hora, muestra):
     start = get_time()
     catalog = mapa_req5(catalog)
@@ -291,7 +287,7 @@ def req_5(catalog, fecha_hora, muestra):
 
     total = lt.size(lista_viajes)
 
-    viajes_ordenados = lt.quick_sort(lista_viajes, sort_criteria_fecha_desc)
+    viajes_ordenados = lt.quick_sort(lista_viajes, sort_criteria_reciente)
 
     if total >= 2 * muestra:
         primeros = lt.sub_list(viajes_ordenados, 0, muestra)
@@ -319,18 +315,20 @@ def mapa_req6(catalog):
         viaje = lt.get_element(catalog["viajes"], i)
         
         barrio = barrio_mas_cercano(viaje["pickup_latitude"],viaje["pickup_longitude"],catalog["barrios"])
-        if mp.contains(mapa_req6, barrio) == False:
-            mapa_req6 = mp.put(mapa_req6, barrio, lt.new_list())
         l = mp.get(mapa_req6, barrio)
-        var = lt.add_last(l, viaje)
-        mp.put(mapa_req6, barrio, var)
-        
-        catalog["barrio_recog"] = mapa_req6
+        if l is None:
+            lista = lt.new_list()
+            lt.add_last(lista, viaje)
+            mp.put(mapa_req6, barrio, lista)
+        else:
+            lt.add_last(l, viaje)
     return catalog
 
 def req_6(catalog, barrio, hora_ini, hora_fin, tamano_muestra):
     start = get_time()
     catalog = mapa_req6(catalog)
+    mapa = catalog["barrio_recog"]
+    
     trayectos = 0
     viajes_filtrados = lt.new_list()
     tamano= lt.size(catalog["viajes"])
@@ -343,47 +341,14 @@ def req_6(catalog, barrio, hora_ini, hora_fin, tamano_muestra):
             hora =int(viaje["pickup_datetime"].split(" ")[1].split(":")[0])
             if int(hora_ini) <= hora and hora <= int(hora_fin):
                 trayectos += 1
+                viaje["pickup_longitude"] = round(viaje["pickup_longitude"],2)
+                viaje["pickup_latitude"] = round(viaje["pickup_latitude"],2)
+                viaje["dropoff_longitude"] = round(viaje["dropoff_longitude"],2)
+                viaje["dropoff_latitude"] = round(viaje["dropoff_latitude"],2)
                 lt.add_last(viajes_filtrados, viaje)
     viajes_orden = lt.quick_sort(viajes_filtrados, sort_crit6)
     end = get_time()
     tiempo = delta_time(start, end)
-    if trayectos >= 2*tamano_muestra:
-        primeros=lt.new_list()
-        for j in range(0,tamano_muestra):
-            viaje=lt.get_element(viajes_orden,j)
-            info={"Id_trayecto": viaje["id"],
-                "Fecha y tiempo recogida": viaje["pickup_datetime"],
-                "Latitud y longitud recogida": f'[{viaje["pickup_latitude"]},{viaje["pickup_longitude"]}]',
-                "Fecha y tiempo de terminación": viaje["dropoff_datetime"],
-                "Latitud y longitud de terminación": f'[{viaje["dropoff_latitude"]},{viaje["dropoff_longitude"]}]',
-                "Distancia (millas)": viaje["trip_distance"],
-                "Costo total": viaje["total_amount"]}
-            lt.add_last(primeros,info)
-        ultimos=lt.new_list()
-        for j in range(lt.size(viajes_orden)-tamano_muestra,lt.size(viajes_orden)):
-            viaje=lt.get_element(viajes_orden,j)
-            info={"Id_trayecto": viaje["id"],
-                "Fecha y tiempo recogida": viaje["pickup_datetime"],
-                "Latitud y longitud recogida": f'[{viaje["pickup_latitude"]},{viaje["pickup_longitude"]}]',
-                "Fecha y hora de terminación": viaje["dropoff_datetime"],
-                "Latitud y longitud de terminación": f'[{viaje["dropoff_latitude"]},{viaje["dropoff_longitude"]}]',
-                "Distancia (millas)": viaje["trip_distance"],
-                "Costo total": viaje["total_amount"]}
-            lt.add_last(ultimos,info)
-        viajes_orden={"Primeros viajes:": primeros,"Últimos viajes:": ultimos}
-    else:
-        m=mp.new_map(lt.size(viajes_orden),0.5,109345121)
-        for k in range(lt.size(viajes_orden)):
-            viaje=lt.get_element(viajes_orden,k)
-            lista=lt.new_list()
-            lt.add_last(lista, viaje["pickup_datetime"])
-            lt.add_last(lista, f'[{viaje["pickup_latitude"]},{viaje["pickup_longitude"]}]')
-            lt.add_last(lista, viaje["dropoff_datetime"])
-            lt.add_last(lista, f'[{viaje["dropoff_latitude"]},{viaje["dropoff_longitude"]}]')
-            lt.add_last(lista, viaje["trip_distance"])
-            lt.add_last(lista, viaje["total_amount"])
-            mp.put(m, viaje["id"], lista)
-        viajes_orden=m
     return tiempo, trayectos, viajes_orden
 
 
