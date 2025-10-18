@@ -253,7 +253,7 @@ def req_4(catalog, fecha_terminacion, tiempo_ref, criterio, muestra):
 
 
 def mapa_req5(catalog):
-    catalog["fecha_hora_term"] = mp.new_map(600*24, 0.5) #req5 Tabla Hash llave sea fecha y hora terminación
+    catalog["fecha_hora_term"] = mp.new_map(100*24, 0.7) #req5 Tabla Hash llave sea fecha y hora terminación
     mapa_req5 = catalog["fecha_hora_term"]
     
     for i in range(lt.size(catalog["viajes"])):
@@ -290,7 +290,7 @@ def req_5(catalog, fecha_hora, muestra):
 
     if total >= 2 * muestra:
         primeros = lt.sub_list(viajes_ordenados, 0, muestra)
-        ultimos = lt.sub_list(viajes_ordenados, total - muestra + 1, muestra)
+        ultimos = lt.sub_list(viajes_ordenados, total - muestra, muestra)
         viajes_final = {"Primeros": primeros, "Ultimos": ultimos}
     else:
         viajes_final = viajes_ordenados
